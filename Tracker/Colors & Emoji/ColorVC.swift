@@ -7,37 +7,15 @@
 
 import UIKit
 
-class ColorViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+final class ColorViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    weak var newUsualVC: NewUsualTrackerViewController?
+    weak var newIrregularVC: NewIrregularTrackerViewController?
     
     private var collectionView: UICollectionView!
     
-    private let colors: [UIColor] = [
-        UIColor(named: "CRed")!,
-        UIColor(named: "COrange")!,
-        UIColor(named: "CBlue")!,
-        UIColor(named: "CViolet")!,
-        UIColor(named: "CGreen")!,
-        UIColor(named: "CPink")!,
-        UIColor(named: "CPigPink")!,
-        UIColor(named: "CLightBlue")!,
-        UIColor(named: "CSalad")!,
-        UIColor(named: "CDarkViolet")!,
-        UIColor(named: "CLightRed")!,
-        UIColor(named: "CLightPink")!,
-        UIColor(named: "CYellow")!,
-        UIColor(named: "CPastelBlue")!,
-        UIColor(named: "COneMoreViolet")!,
-        UIColor(named: "CAnotherOneViolet")!,
-        UIColor(named: "CVioletBlue")!,
-        UIColor(named: "CBrightGreen")!
-    ]
-    
-    private let colorNames: [String] = [
-        "CRed", "COrange", "CBlue", "CViolet", "CGreen", "CPink", "CPigPink",
-        "CLightBlue", "CSalad", "CDarkViolet", "CLightRed", "CLightPink",
-        "CYellow", "CPastelBlue", "COneMoreViolet", "CAnotherOneViolet",
-        "CVioletBlue", "CBrightGreen"
-    ]
+    let colors: [UIColor] = AppColor.allCases.map { $0.color }
+    let colorNames: [String] = AppColor.allCases.map { $0.rawValue }
     
     var selectedColor: UIColor?
     var selectedColorName: String?
@@ -135,6 +113,8 @@ class ColorViewController: UIViewController, UICollectionViewDataSource, UIColle
         selectedColor = colors[indexPath.item]
         selectedColorName = colorNames[indexPath.item]
         print("Selected color: \(selectedColor!), name: \(selectedColorName!)")
+        newUsualVC?.updateCreateButtonState()
+        newIrregularVC?.updateCreateButtonState()
         
         if let newCell = collectionView.cellForItem(at: indexPath) as? ColorCollectionViewCell {
             newCell.isSelected = true

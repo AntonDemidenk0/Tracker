@@ -27,12 +27,16 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
 
     private var cancelButton: UIButton!
     private var createButton: UIButton!
-
     private var completionHandler: ((Tracker, String) -> Void)?
 
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
+    private var closeNewTrackerVCHandler: (() -> Void)?
+    func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
+        self.closeNewTrackerVCHandler = handler
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -50,6 +54,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
             tapGesture.cancelsTouchesInView = false
             view.addGestureRecognizer(tapGesture)
+        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
     
     // MARK: - Setup UI
@@ -91,8 +96,6 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
             cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -8),
             cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor)
         ])
-
-        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
 
     private func setupTextField() {
@@ -183,11 +186,13 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
 
     private func setupChildViewControllers() {
         colorVC = ColorViewController()
+        colorVC.newIrregularVC = self
         addChild(colorVC)
         contentView.addSubview(colorVC.view)
         colorVC.didMove(toParent: self)
 
         emojiVC = EmojiViewController()
+        emojiVC.newIrregularVC = self
         addChild(emojiVC)
         contentView.addSubview(emojiVC.view)
         emojiVC.didMove(toParent: self)
@@ -206,6 +211,16 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
             colorVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             colorVC.view.heightAnchor.constraint(equalToConstant: 204)
         ])
+    }
+    
+    func updateCreateButtonState() {
+        let isTrackerNameValid = !(trackerName?.isEmpty ?? true)
+        let isCategorySelected = selectedCategory != nil
+        let isColorSelected = colorVC.selectedColorName != nil
+        let isEmojiSelected = emojiVC.selectedEmoji != nil
+        
+        createButton.isEnabled = isTrackerNameValid && isCategorySelected && isColorSelected && isEmojiSelected
+        createButton.backgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
     }
 
     // MARK: - UITableViewDataSource
@@ -265,6 +280,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
         } else {
             self.selectedCategory = nil
         }
+        updateCreateButtonState()
         tableView.reloadData()
     }
 
@@ -295,11 +311,13 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
         if let handler = completionHandler, let categoryTitle = selectedCategory {
             print("Completion Handler вызывается")
             handler(irregularTracker, categoryTitle)
+            dismiss(animated: true, completion: nil)
         } else {
             print("Completion Handler не установлен или категория не выбрана")
         }
-        
-        dismiss(animated: true, completion: nil)
+        if let handler = closeNewTrackerVCHandler {
+            handler()
+        }
     }
 
 
@@ -317,6 +335,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == trackerNameTextField {
             trackerName = textField.text
+            updateCreateButtonState()
             print("Tracker name: \(trackerName ?? "")")
         }
     }
@@ -332,13 +351,6 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         print("Text changed: \(textField.text ?? "")")
-        if let text = textField.text, !text.isEmpty {
-            createButton.isEnabled = true
-            createButton.backgroundColor = UIColor(named: "YBlackColor")
-        } else {
-            createButton.isEnabled = false
-            createButton.backgroundColor = UIColor(named: "YGrayColor")
-        }
         
         let isOverLimit = (textField.text?.count ?? 0) > 37
         limitLabel.isHidden = !isOverLimit

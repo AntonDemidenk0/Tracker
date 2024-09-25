@@ -82,6 +82,10 @@ final class NewTrackerViewController: UIViewController {
             }
         }
         
+        newUsualVC.setCloseNewTrackerVCHandler { [weak self] in
+                guard let self = self else { return }
+                self.dismiss(animated: true)
+            }
         let navController = UINavigationController(rootViewController: newUsualVC)
         navController.modalPresentationStyle = .formSheet
         self.present(navController, animated: true)
@@ -99,6 +103,10 @@ final class NewTrackerViewController: UIViewController {
             }
         }
         
+        newIrregularVC.setCloseNewTrackerVCHandler { [weak self] in
+                guard let self = self else { return }
+                self.dismiss(animated: true)
+            }
         let navController = UINavigationController(rootViewController: newIrregularVC)
         navController.modalPresentationStyle = .formSheet
         self.present(navController, animated: true)

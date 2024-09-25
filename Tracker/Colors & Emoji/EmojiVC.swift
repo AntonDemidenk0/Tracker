@@ -8,7 +8,10 @@
 import Foundation
 import UIKit
 
-class EmojiViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+final class EmojiViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    weak var newUsualVC: NewUsualTrackerViewController?
+    weak var newIrregularVC: NewIrregularTrackerViewController?
     
     private var collectionView: UICollectionView!
     
@@ -93,6 +96,8 @@ class EmojiViewController: UIViewController, UICollectionViewDataSource, UIColle
         selectedIndexPath = indexPath
         selectedEmoji = emojis[indexPath.item]
         print("Selected emoji: \(selectedEmoji!)")
+        newUsualVC?.updateCreateButtonState()
+        newIrregularVC?.updateCreateButtonState()
         
         if let newCell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
             newCell.updateAppearance(isSelected: true) 

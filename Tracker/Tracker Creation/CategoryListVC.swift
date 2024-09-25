@@ -89,13 +89,6 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         tableView.addGestureRecognizer(longPressRecognizer)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-
-        selectedCategory = nil
-        tableView.reloadData()
-    }
-    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         let categoryToSend = selectedCategory ?? nil
@@ -166,9 +159,12 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         cell.backgroundColor = UIColor(named: "TableViewColor")
         
         if selectedCategory == category {
-            cell.accessoryType = .checkmark
-        }
-
+                cell.accessoryType = .checkmark
+                cell.separatorTrailingConstraint?.constant = 28
+            } else {
+                cell.separatorTrailingConstraint?.constant = -16
+            }
+        
         if categories.count > 1 {
             let isLastRow = indexPath.row == categories.count - 1
             cell.setSeparatorHidden(isLastRow)

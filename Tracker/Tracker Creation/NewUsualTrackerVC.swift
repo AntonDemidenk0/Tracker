@@ -37,6 +37,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
+    private var closeNewTrackerVCHandler: (() -> Void)?
+    func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
+        self.closeNewTrackerVCHandler = handler
+    }
     
     // MARK: - Lifecycle
     
@@ -54,6 +58,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
+        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         view.addGestureRecognizer(tapGesture)
     }
     
@@ -78,7 +83,6 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         createButton.backgroundColor = UIColor(named: "YGrayColor")
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
-        createButton.isEnabled = false // Делаем кнопку неактивной
         createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
         
         contentView.addSubview(cancelButton)
@@ -96,8 +100,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -8),
             cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor)
         ])
-        
-        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        updateCreateButtonState()
     }
     
     private func setupTextField() {
@@ -187,11 +190,13 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     
     private func setupChildViewControllers() {
         colorVC = ColorViewController()
+        colorVC.newUsualVC = self
         addChild(colorVC)
         contentView.addSubview(colorVC.view)
         colorVC.didMove(toParent: self)
         
         emojiVC = EmojiViewController()
+        emojiVC.newUsualVC = self
         addChild(emojiVC)
         contentView.addSubview(emojiVC.view)
         emojiVC.didMove(toParent: self)
@@ -210,6 +215,17 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             colorVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             colorVC.view.heightAnchor.constraint(equalToConstant: 204)
         ])
+    }
+    
+    func updateCreateButtonState() {
+        let isTrackerNameValid = trackerName != nil
+        let isCategorySelected = selectedCategory != nil
+        let isScheduleSelected = !(selectedDaysString.isEmpty)
+        let isColorSelected = colorVC.selectedColorName != nil
+        let isEmojiSelected = emojiVC.selectedEmoji != nil
+        
+        createButton.isEnabled = isTrackerNameValid && isCategorySelected && isScheduleSelected && isColorSelected && isEmojiSelected
+        createButton.backgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
     }
     
     // MARK: - UITableViewDataSource
@@ -315,6 +331,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == trackerNameTextField {
             trackerName = textField.text
+            updateCreateButtonState()
             print("Tracker name: \(trackerName ?? "")")
         }
     }
@@ -331,13 +348,6 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         print("Text changed: \(textField.text ?? "")")
-        if let text = textField.text, !text.isEmpty {
-            createButton.isEnabled = true
-            createButton.backgroundColor = UIColor(named: "YBlackColor")
-        } else {
-            createButton.isEnabled = false
-            createButton.backgroundColor = UIColor(named: "YGrayColor")
-        }
         
         let isOverLimit = (textField.text?.count ?? 0) > 37
         limitLabel.isHidden = !isOverLimit
@@ -360,6 +370,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         } else {
             self.selectedCategory = nil
         }
+        updateCreateButtonState()
         tableView.reloadData()
     }
     
@@ -374,9 +385,9 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         let sortedDaysString = sortedSelectedDays.count == WeekDay.allCases.count ? "Каждый день" : sortedSelectedDays.map { $0.shortName }.joined(separator: ", ")
         
         self.selectedDaysString = sortedDaysString
+        updateCreateButtonState()
         tableView.reloadData()
     }
-    
     
     
     private func updateContentViewHeight() {
@@ -399,8 +410,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     @objc private func cancelButtonTapped(_ sender: UIButton) {
         trackerNameTextField.text = ""
         trackerName = nil
-        
-        dismiss(animated: true, completion: nil)
+        if let handler = closeNewTrackerVCHandler {
+            dismiss(animated: true, completion: nil)
+            handler()
+        }
     }
     
     @objc private func createButtonTapped() {
@@ -450,10 +463,12 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         if let handler = completionHandler, let categoryTitle = selectedCategory {
             print("Completion Handler вызывается")
             handler(newTracker, categoryTitle)
+            dismiss(animated: true, completion: nil)
         } else {
             print("Completion Handler не установлен или категория не выбрана")
         }
-        
-        self.navigationController?.dismiss(animated: true, completion: nil)
+        if let handler = closeNewTrackerVCHandler {
+            handler()
+        }
     }
 }

@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class PaddedTextField: UITextField {
+final class PaddedTextField: UITextField {
     
     let padding: UIEdgeInsets = .init(top: 0, left: 16, bottom: 0, right: 16)
     
@@ -42,7 +42,7 @@ class CustomTableViewCell: UITableViewCell {
         return label
     }()
     
-    private var separatorTrailingConstraint: NSLayoutConstraint?
+    var separatorTrailingConstraint: NSLayoutConstraint?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -97,9 +97,6 @@ class CustomTableViewCell: UITableViewCell {
         layoutIfNeeded()
     }
 }
-
-
-
 
 class ScheduleTableViewCell: CustomTableViewCell {
     let switchControl: UISwitch = {

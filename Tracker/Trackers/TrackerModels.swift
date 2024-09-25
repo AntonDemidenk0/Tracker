@@ -23,13 +23,6 @@ struct Tracker: Codable {
     }
 }
 
-struct irregularTracker: Codable {
-    let id: UUID
-    let name: String
-    let color: String
-    let emoji: String
-}
-
 struct TrackerCategory: Codable {
     let title: String
     let trackers: [Tracker]

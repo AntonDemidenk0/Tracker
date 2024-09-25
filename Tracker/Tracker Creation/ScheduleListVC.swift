@@ -65,7 +65,7 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
     
     private var tableView: UITableView!
     private var readyButton: UIButton!
-    
+    private var didPressReadyButton = false
     private var allDays: [WeekDay] {
         return WeekDay.allCases.sorted { $0.rawValue < $1.rawValue }
     }
@@ -113,6 +113,13 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         navigationItem.title = "Расписание"
         setupTableView()
         setupReadyButton()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if !didPressReadyButton {
+                   delegate?.didSelectDays("")
+               }
     }
     
     private func setupTableView() {
@@ -179,6 +186,7 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         UserDefaults.standard.set(selectedDaysRawValues, forKey: "SelectedDays")
 
         delegate?.didSelectDays(selectedDaysString)
+        didPressReadyButton = true
         dismiss(animated: true, completion: nil)
     }
 

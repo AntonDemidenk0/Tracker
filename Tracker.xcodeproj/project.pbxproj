@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F9FB35E2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1F9FB35C2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld */; };
+		1F9FB3602CA49D72001ACF03 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F9FB35F2CA49D72001ACF03 /* Colors.swift */; };
 		1FA5E0072C9046C4007A729D /* NewTrackerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E0062C9046C4007A729D /* NewTrackerVC.swift */; };
 		1FA5E0092C90A45E007A729D /* ColorCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E0082C90A45E007A729D /* ColorCollectionViewCell.swift */; };
 		1FA5E00B2C90A485007A729D /* EmojiCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E00A2C90A485007A729D /* EmojiCollectionViewCell.swift */; };
@@ -32,6 +34,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1F9FB35D2CA2F1A2001ACF03 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
+		1F9FB35F2CA49D72001ACF03 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		1FA5E0062C9046C4007A729D /* NewTrackerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTrackerVC.swift; sourceTree = "<group>"; };
 		1FA5E0082C90A45E007A729D /* ColorCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCollectionViewCell.swift; sourceTree = "<group>"; };
 		1FA5E00A2C90A485007A729D /* EmojiCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -104,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				1FC47BB82C943DE200DFABE4 /* HelpersClasses & Extensions.swift */,
+				1F9FB35F2CA49D72001ACF03 /* Colors.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -151,6 +156,7 @@
 				1FC47BC52CA1A00100DFABE4 /* Statistics */,
 				1FC47BC42CA19FD600DFABE4 /* Colors & Emoji */,
 				1FC47BC62CA1A03A00DFABE4 /* Helpers */,
+				1F9FB35C2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -226,10 +232,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FA5E0132C90D631007A729D /* SectionHeaderView.swift in Sources */,
+				1F9FB3602CA49D72001ACF03 /* Colors.swift in Sources */,
 				1FC47BBD2C9C925400DFABE4 /* TabBarController.swift in Sources */,
 				1FA5E00B2C90A485007A729D /* EmojiCollectionViewCell.swift in Sources */,
 				1FC47BB42C94300200DFABE4 /* CategoryListVC.swift in Sources */,
 				1FC47BB62C943D0500DFABE4 /* NewCategoryVC.swift in Sources */,
+				1F9FB35E2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld in Sources */,
 				1FC47BC92CA1A1D000DFABE4 /* TrackerHeaderVC.swift in Sources */,
 				1FA5E0092C90A45E007A729D /* ColorCollectionViewCell.swift in Sources */,
 				1FA5E00D2C90D0BF007A729D /* ColorVC.swift in Sources */,
@@ -455,6 +463,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		1F9FB35C2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				1F9FB35D2CA2F1A2001ACF03 /* TrackerModel.xcdatamodel */,
+			);
+			currentVersion = 1F9FB35D2CA2F1A2001ACF03 /* TrackerModel.xcdatamodel */;
+			name = TrackerModel.xcdatamodeld;
+			path = /Users/antondemidenko/dev/Tracker/Tracker/TrackerModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 1FE4A50B2C89B150005B7A7D /* Project object */;
 }

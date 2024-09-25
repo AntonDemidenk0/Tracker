@@ -308,9 +308,9 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
         
-        if let creationDate = trackerCreationDates[tracker.id], calendar.compare(creationDate, to: date, toGranularity: .day) == .orderedDescending {
+        /*if let creationDate = trackerCreationDates[tracker.id], calendar.compare(creationDate, to: date, toGranularity: .day) == .orderedDescending {
             return false
-        }
+        }*/
         
         if let schedule = tracker.schedule {
             let currentWeekDay = calendar.component(.weekday, from: date)
@@ -319,10 +319,15 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
             return schedule.days.contains(selectedWeekDay!)
         } else {
             if let completionRecord = completedTrackers.first(where: { $0.trackerId == tracker.id }) {
-                return date < Calendar.current.date(byAdding: .day, value: 1, to: completionRecord.date)!
+                let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: completionRecord.date)!
+                
+                if date < completionRecord.date {
+                    return false
+                }
+                return date < nextDay
             }
         }
-        return true
+            return true
     }
     
     

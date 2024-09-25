@@ -159,6 +159,7 @@ final class TrackerCell: UICollectionViewCell {
         guard let tracker = tracker, let currentDate = currentDate else { return }
         
         if Calendar.current.isDateInFuture(currentDate) {
+            print("Нельзя отметить трекер для будущей даты")
             return
         }
         
