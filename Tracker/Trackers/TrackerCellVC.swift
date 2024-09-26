@@ -20,13 +20,13 @@ final class TrackerCell: UICollectionViewCell {
     
     // MARK: - Properties
     
-    var tracker: Tracker?
-    var currentDate: Date?
+    private var tracker: Tracker?
+    private var currentDate: Date?
     weak var delegate: TrackerCellDelegate?
     
     // MARK: - UI Elements
     
-    private let nameLabel: UILabel = {
+    private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 12)
         label.textColor = .white
@@ -34,14 +34,14 @@ final class TrackerCell: UICollectionViewCell {
         return label
     }()
     
-    private let emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 24)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private let containerView: UIView = {
+    private lazy var containerView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
@@ -49,7 +49,7 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
-    private let daysLabel: UILabel = {
+    private lazy var daysLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -57,7 +57,7 @@ final class TrackerCell: UICollectionViewCell {
         return label
     }()
     
-    private let actionButton: UIButton = {
+    private lazy var actionButton: UIButton = {
         let button = UIButton(type: .custom)
         button.backgroundColor = .white
         button.layer.cornerRadius = 17
@@ -78,7 +78,7 @@ final class TrackerCell: UICollectionViewCell {
     }()
     
     private var originalButtonColor: UIColor?
-
+    
     // MARK: - Init
     
     override init(frame: CGRect) {
@@ -92,7 +92,7 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
     }
     
     // MARK: - Configure Cell
@@ -112,7 +112,6 @@ final class TrackerCell: UICollectionViewCell {
             actionButton.backgroundColor = .gray
         }
         
-        let trackerRecord = TrackerRecord(trackerId: tracker.id, date: currentDate)
         if isCompleted {
             actionButton.setTitle("✓", for: .normal)
             actionButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
@@ -184,25 +183,6 @@ final class TrackerCell: UICollectionViewCell {
     // MARK: - Update Days Label
     
     func updateDaysLabel(with count: Int) {
-        daysLabel.text = formatDays(count)
-    }
-    
-    // MARK: - Helpers
-    
-    private func formatDays(_ count: Int) -> String {
-        let absCount = abs(count) % 100
-        let lastDigit = absCount % 10
-        
-        if (11...14).contains(absCount) {
-            return "\(count) дней"
-        }
-        switch lastDigit {
-        case 1:
-            return "\(count) день"
-        case 2, 3, 4:
-            return "\(count) дня"
-        default:
-            return "\(count) дней"
-        }
+        daysLabel.text = count.formatDays()
     }
 }

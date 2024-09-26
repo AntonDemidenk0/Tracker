@@ -239,7 +239,9 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as! CustomTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as? CustomTableViewCell else {
+            fatalError("Unable to dequeue CustomTableViewCell")
+        }
         cell.configure(with: "Your Text", separatorHidden: false)
         cell.setAccessoryType(.disclosureIndicator)
         
@@ -303,14 +305,14 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         }
     }
     
-    @objc func categoryListVC() {
+    @objc private func categoryListVC() {
         let categoryListVC = CategoryListViewController()
         categoryListVC.delegate = self
         let navController = UINavigationController(rootViewController: categoryListVC)
         present(navController, animated: true, completion: nil)
     }
     
-    @objc func scheduleListVC() {
+    @objc private func scheduleListVC() {
         let scheduleListVC = ScheduleListViewController()
         scheduleListVC.delegate = self
         let navController = UINavigationController(rootViewController: scheduleListVC)
@@ -398,9 +400,9 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             if tableViewTopConstraint.constant != newTopConstraintConstant {
                 tableViewTopConstraint.constant = newTopConstraintConstant
                 
-                UIView.animate(withDuration: 0.3) {
-                    self.view.layoutIfNeeded()
-                }
+                UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                    self?.view.layoutIfNeeded()
+                })
             }
         }
     }

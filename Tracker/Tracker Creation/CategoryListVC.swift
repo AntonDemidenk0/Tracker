@@ -14,8 +14,6 @@ protocol CategorySelectionDelegate: AnyObject {
 
 final class CategoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NewCategoryViewControllerDelegate {
     
-    // MARK: - Properties
-    
     weak var delegate: CategorySelectionDelegate?
     
     private var categories: [String] = [] {
@@ -29,18 +27,27 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         }
     }
     
-    private var tableView: UITableView!
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.backgroundColor = UIColor.clear
+        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "categoryCell")
+        tableView.layer.cornerRadius = 16
+        tableView.clipsToBounds = true
+        tableView.separatorStyle = .none
+        return tableView
+    }()
     
-    // MARK: - UI Elements
-    
-    private let stubImageView: UIImageView = {
+    private lazy var stubImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MainScreenStub"))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.isHidden = false
         return imageView
     }()
     
-    private let stubLabel: UILabel = {
+    private lazy var stubLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 2
         label.text = "Привычки и события можно\nобъединить по смыслу"
@@ -51,7 +58,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         return label
     }()
     
-    private let newCategoryButton: UIButton = {
+    private lazy var newCategoryButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Добавить категорию", for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
@@ -62,8 +69,6 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -95,28 +100,6 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         delegate?.didSelectCategory(categoryToSend)
     }
     
-    // MARK: - Setup UI
-    
-    private func setupTableView() {
-        tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.backgroundColor = UIColor.clear
-        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "categoryCell")
-        tableView.layer.cornerRadius = 16
-        tableView.clipsToBounds = true
-        tableView.separatorStyle = .none
-        view.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            tableView.bottomAnchor.constraint(equalTo: newCategoryButton.topAnchor, constant: -16)
-        ])
-    }
-    
     private func setupLayout() {
         NSLayoutConstraint.activate([
             stubImageView.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
@@ -130,6 +113,17 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         ])
     }
     
+    private func setupTableView() {
+        view.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            tableView.bottomAnchor.constraint(equalTo: newCategoryButton.topAnchor, constant: -16)
+        ])
+    }
+    
     private func updateUI() {
         let hasCategories = !categories.isEmpty
         stubImageView.isHidden = hasCategories
@@ -139,8 +133,6 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         tableView.reloadData()
     }
     
-    // MARK: - TableView DataSource & Delegate
-
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
@@ -159,11 +151,11 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         cell.backgroundColor = UIColor(named: "TableViewColor")
         
         if selectedCategory == category {
-                cell.accessoryType = .checkmark
-                cell.separatorTrailingConstraint?.constant = 28
-            } else {
-                cell.separatorTrailingConstraint?.constant = -16
-            }
+            cell.accessoryType = .checkmark
+            cell.separatorTrailingConstraint?.constant = 28
+        } else {
+            cell.separatorTrailingConstraint?.constant = -16
+        }
         
         if categories.count > 1 {
             let isLastRow = indexPath.row == categories.count - 1
@@ -207,8 +199,6 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
             dismiss(animated: true, completion: nil)
         }
     }
-
-    // MARK: - NewCategoryViewControllerDelegate
     
     func didAddCategory(_ category: String) {
         categories.append(category)
@@ -216,9 +206,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         updateUI()
     }
     
-    // MARK: - Long Press Gesture
-    
-    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+    @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             let touchPoint = gestureRecognizer.location(in: tableView)
             if let indexPath = tableView.indexPathForRow(at: touchPoint) {
@@ -226,15 +214,15 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
                 
                 let alert = UIAlertController(title: "Удалить категорию?", message: "Вы уверены, что хотите удалить категорию '\(categoryToDelete)'?", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-                alert.addAction(UIAlertAction(title: "Удалить", style: .destructive, handler: { _ in
-                    self.deleteCategory(at: indexPath)
+                alert.addAction(UIAlertAction(title: "Удалить", style: .destructive, handler: { [weak self] _ in
+                    self?.deleteCategory(at: indexPath)
                 }))
                 
                 present(alert, animated: true, completion: nil)
             }
         }
     }
-
+    
     private func deleteCategory(at indexPath: IndexPath) {
         let categoryToDelete = categories[indexPath.row]
         
@@ -246,14 +234,12 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         
         tableView.performBatchUpdates({
             tableView.deleteRows(at: [indexPath], with: .fade)
-        }, completion: { _ in
-            self.updateUI()
+        }, completion: { [weak self] _ in
+            self?.updateUI()
         })
     }
-
-    // MARK: - Actions
     
-    @objc func newCategory(_ sender: UIButton) {
+    @objc private func newCategory(_ sender: UIButton) {
         let newCategoryVC = NewCategoryViewController()
         newCategoryVC.delegate = self
         let navController = UINavigationController(rootViewController: newCategoryVC)

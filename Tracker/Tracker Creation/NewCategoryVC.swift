@@ -16,7 +16,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     weak var delegate: NewCategoryViewControllerDelegate?
     
-    private let categoryNameTextField: PaddedTextField = {
+    private lazy var categoryNameTextField: PaddedTextField = {
         let textField = PaddedTextField()
         textField.placeholder = "Введите название категории"
         textField.layer.cornerRadius = 16
@@ -26,7 +26,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
         return textField
     }()
     
-    private let readyButton: UIButton = {
+    private lazy var readyButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
         button.backgroundColor = UIColor(named: "YGrayColor")
@@ -39,7 +39,17 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
         return button
     }()
     
-    private var limitLabel: UILabel!
+    private lazy var limitLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение 38 символов"
+        label.textColor = UIColor(named: "CancelButtonColor")
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 17)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.alpha = 0
+        label.isHidden = true
+        return label
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,20 +57,17 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
         view.backgroundColor = .white
         view.addSubview(categoryNameTextField)
         view.addSubview(readyButton)
+        view.addSubview(limitLabel)
         
         setupLayout()
-        setupLimitLabel()
         
         categoryNameTextField.delegate = self
-        
         categoryNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
-    
-    // MARK: - Setup UI
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
@@ -73,29 +80,12 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
             readyButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             readyButton.heightAnchor.constraint(equalToConstant: 60),
             readyButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-        ])
-    }
-    
-    private func setupLimitLabel() {
-        limitLabel = UILabel()
-        limitLabel.text = "Ограничение 38 символов"
-        limitLabel.textColor = UIColor(named: "CancelButtonColor")
-        limitLabel.textAlignment = .center
-        limitLabel.font = UIFont.systemFont(ofSize: 17)
-        limitLabel.translatesAutoresizingMaskIntoConstraints = false
-        limitLabel.alpha = 0
-        limitLabel.isHidden = true
-        
-        view.addSubview(limitLabel)
-        
-        NSLayoutConstraint.activate([
+            
             limitLabel.topAnchor.constraint(equalTo: categoryNameTextField.bottomAnchor, constant: 8),
             limitLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            limitLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            limitLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
-    
-    // MARK: - UITextFieldDelegate
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let currentText = textField.text ?? ""
@@ -116,7 +106,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
             print("Category name: \(textField.text ?? "")")
         }
     }
-
+    
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
@@ -145,25 +135,23 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
             hideLimitLabel()
         }
     }
-
-    // MARK: - Limit Label Actions
     
     private func showLimitLabel() {
         limitLabel.isHidden = false
-        UIView.animate(withDuration: 0.3) {
-            self.limitLabel.alpha = 1
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.limitLabel.alpha = 1
         }
     }
     
     private func hideLimitLabel() {
-        UIView.animate(withDuration: 0.3) {
-            self.limitLabel.alpha = 0
-        } completion: { _ in
-            self.limitLabel.isHidden = true
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            self?.limitLabel.alpha = 0
+        } completion: { [weak self] _ in
+            self?.limitLabel.isHidden = true
         }
     }
-
-    @objc func addCategory(_ sender: UIButton) {
+    
+    @objc private func addCategory(_ sender: UIButton) {
         if let categoryName = categoryNameTextField.text, !categoryName.isEmpty {
             delegate?.didAddCategory(categoryName)
             dismiss(animated: true, completion: nil)

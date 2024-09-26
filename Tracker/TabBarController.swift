@@ -26,15 +26,16 @@ final class MainTabBarController: UITabBarController {
         setupTabBarAppearance()
     }
 
+    // MARK: - Setuo
     private func setupTabBarAppearance() {
-        
         tabBar.backgroundColor = .white
         tabBar.isTranslucent = false
 
         let topBorder = UIView(frame: CGRect(x: 0, y: 0, width: tabBar.frame.width, height: 1))
-        topBorder.backgroundColor = UIColor(named: "YGrayColor")
+        topBorder.backgroundColor = UIColor(named: "YGrayColor") ?? .gray
         tabBar.addSubview(topBorder)
     }
 }
+
 
 

@@ -8,76 +8,52 @@
 import Foundation
 import UIKit
 
-enum WeekDay: Int, CaseIterable, Codable {
-    case monday = 1
-    case tuesday
-    case wednesday
-    case thursday
-    case friday
-    case saturday
-    case sunday
-    
-    var displayName: String {
-        switch self {
-        case .monday: return "Понедельник"
-        case .tuesday: return "Вторник"
-        case .wednesday: return "Среда"
-        case .thursday: return "Четверг"
-        case .friday: return "Пятница"
-        case .saturday: return "Суббота"
-        case .sunday: return "Воскресенье"
-        }
-    }
-    
-    var shortName: String {
-        switch self {
-        case .monday: return "Пн"
-        case .tuesday: return "Вт"
-        case .wednesday: return "Ср"
-        case .thursday: return "Чт"
-        case .friday: return "Пт"
-        case .saturday: return "Сб"
-        case .sunday: return "Вс"
-        }
-    }
-    
-    init?(shortName: String) {
-        switch shortName {
-        case "Пн": self = .monday
-        case "Вт": self = .tuesday
-        case "Ср": self = .wednesday
-        case "Чт": self = .thursday
-        case "Пт": self = .friday
-        case "Сб": self = .saturday
-        case "Вс": self = .sunday
-        default: return nil
-        }
-    }
-}
-
 protocol ScheduleSelectionDelegate: AnyObject {
     func didSelectDays(_ days: String)
 }
 
 final class ScheduleListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
+    
     weak var delegate: ScheduleSelectionDelegate?
     
-    private var tableView: UITableView!
-    private var readyButton: UIButton!
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.layer.cornerRadius = 16
+        tableView.separatorStyle = .none
+        tableView.isScrollEnabled = false
+        tableView.backgroundColor = UIColor.clear
+        tableView.register(ScheduleTableViewCell.self, forCellReuseIdentifier: "dayCell")
+        return tableView
+    }()
+    
+    private lazy var readyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Готово", for: .normal)
+        button.backgroundColor = UIColor(named: "YBlackColor")
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.layer.cornerRadius = 16
+        button.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private var didPressReadyButton = false
     private var allDays: [WeekDay] {
         return WeekDay.allCases.sorted { $0.rawValue < $1.rawValue }
     }
-
-    var selectedDays: Set<WeekDay> = [] {
+    
+    private var selectedDays: Set<WeekDay> = [] {
         didSet {
             let daysRawValues = selectedDays.map { $0.rawValue }
             UserDefaults.standard.set(daysRawValues, forKey: "SelectedDays")
         }
     }
-
-    var selectedDaysString: String {
+    
+    private var selectedDaysString: String {
         if selectedDays == Set(allDays) {
             return "Каждый день"
         } else {
@@ -86,17 +62,8 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
                 .joined(separator: ", ")
         }
     }
-
+    
     private func setupReadyButton() {
-        readyButton = UIButton(type: .system)
-        readyButton.setTitle("Готово", for: .normal)
-        readyButton.backgroundColor = UIColor(named: "YBlackColor")
-        readyButton.setTitleColor(.white, for: .normal)
-        readyButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        readyButton.layer.cornerRadius = 16
-        readyButton.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
-        readyButton.translatesAutoresizingMaskIntoConstraints = false
-        
         view.addSubview(readyButton)
         
         NSLayoutConstraint.activate([
@@ -118,21 +85,11 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         if !didPressReadyButton {
-                   delegate?.didSelectDays("")
-               }
+            delegate?.didSelectDays("")
+        }
     }
     
     private func setupTableView() {
-        tableView = UITableView(frame: .zero, style: .plain)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.layer.cornerRadius = 16
-        tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
-        tableView.backgroundColor = UIColor.clear
-        tableView.register(ScheduleTableViewCell.self, forCellReuseIdentifier: "dayCell")
-        
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -143,8 +100,6 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         ])
     }
     
-    // MARK: - UITableViewDataSource
-    
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -154,7 +109,9 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "dayCell", for: indexPath) as! ScheduleTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "dayCell", for: indexPath) as? ScheduleTableViewCell else {
+            return UITableViewCell()
+        }
         let day = WeekDay.allCases[indexPath.row]
         
         let isSwitchOn = selectedDays.contains(day)
@@ -166,13 +123,11 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         return cell
     }
     
-    // MARK: - UITableViewDelegate
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
     
-    @objc func addSchedule(_ sender: UIButton) {
+    @objc private func addSchedule(_ sender: UIButton) {
         if selectedDays.count == WeekDay.allCases.count {
             selectedDays = Set(WeekDay.allCases)
         }
@@ -180,16 +135,16 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         let selectedDaysString = selectedDays.sorted { $0.rawValue < $1.rawValue }
             .map { $0.shortName }
             .joined(separator: ", ")
-
+        
         let selectedDaysRawValues = selectedDays.sorted { $0.rawValue < $1.rawValue }
             .map { $0.rawValue }
         UserDefaults.standard.set(selectedDaysRawValues, forKey: "SelectedDays")
-
+        
         delegate?.didSelectDays(selectedDaysString)
         didPressReadyButton = true
         dismiss(animated: true, completion: nil)
     }
-
+    
     @objc private func switchValueChanged(_ sender: UISwitch) {
         let day = WeekDay.allCases[sender.tag]
         
@@ -200,4 +155,3 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         }
     }
 }
-

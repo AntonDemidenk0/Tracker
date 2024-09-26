@@ -238,7 +238,9 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as! CustomTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as? CustomTableViewCell else {
+            fatalError("Unable to dequeue CustomTableViewCell")
+        }
         let mainText = "Категория"
         
         if let selectedCategory = selectedCategory {
@@ -375,9 +377,9 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
             if tableViewTopConstraint.constant != newTopConstraintConstant {
                 tableViewTopConstraint.constant = newTopConstraintConstant
                 
-                UIView.animate(withDuration: 0.3) {
-                    self.view.layoutIfNeeded()
-                }
+                UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                    self?.view.layoutIfNeeded()
+                })
             }
         }
     }

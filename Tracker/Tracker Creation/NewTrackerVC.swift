@@ -14,7 +14,7 @@ final class NewTrackerViewController: UIViewController {
     
     // MARK: - UI Elements
     
-    private let habitButton: UIButton = {
+    private lazy var habitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
@@ -26,7 +26,7 @@ final class NewTrackerViewController: UIViewController {
         return button
     }()
     
-    private let irregularEventButton: UIButton = {
+    private lazy var irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Нерегулярное событие", for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
@@ -70,46 +70,39 @@ final class NewTrackerViewController: UIViewController {
     
     // MARK: - Actions
     
-    @objc func newUsualTracker(_ sender: UIButton) {
+    @objc private func newUsualTracker(_ sender: UIButton) {
         let newUsualVC = NewUsualTrackerViewController()
-        
         newUsualVC.trackersViewController = self.trackersViewController
         
         newUsualVC.setCompletionHandler { [weak self] newTracker, categoryTitle in
             guard let self = self else { return }
-            if let trackersVC = newUsualVC.trackersViewController {
-                trackersVC.addTracker(newTracker, toCategoryTitle: categoryTitle)
-            }
+            self.trackersViewController?.addTracker(newTracker, toCategoryTitle: categoryTitle)
         }
         
         newUsualVC.setCloseNewTrackerVCHandler { [weak self] in
-                guard let self = self else { return }
-                self.dismiss(animated: true)
-            }
+            self?.dismiss(animated: true)
+        }
+        
         let navController = UINavigationController(rootViewController: newUsualVC)
         navController.modalPresentationStyle = .formSheet
-        self.present(navController, animated: true)
+        present(navController, animated: true)
     }
     
-    @objc func newIrregularTracker(_ sender: UIButton) {
+    @objc private func newIrregularTracker(_ sender: UIButton) {
         let newIrregularVC = NewIrregularTrackerViewController()
-        
         newIrregularVC.trackersViewController = self.trackersViewController
         
         newIrregularVC.setCompletionHandler { [weak self] newTracker, categoryTitle in
             guard let self = self else { return }
-            if let trackersVC = newIrregularVC.trackersViewController {
-                trackersVC.addTracker(newTracker, toCategoryTitle: categoryTitle)
-            }
+            self.trackersViewController?.addTracker(newTracker, toCategoryTitle: categoryTitle)
         }
         
         newIrregularVC.setCloseNewTrackerVCHandler { [weak self] in
-                guard let self = self else { return }
-                self.dismiss(animated: true)
-            }
+            self?.dismiss(animated: true)
+        }
+        
         let navController = UINavigationController(rootViewController: newIrregularVC)
         navController.modalPresentationStyle = .formSheet
-        self.present(navController, animated: true)
+        present(navController, animated: true)
     }
 }
-
