@@ -322,7 +322,7 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
             guard let selectedWeekDay = WeekDay(rawValue: currentWeekDay == 1 ? 7 : currentWeekDay - 1) else {
                 return false
             }
-            return schedule.days.contains(selectedWeekDay)
+            return schedule.contains(selectedWeekDay)
         } else if let completionRecord = completedTrackers.first(where: { $0.trackerId == tracker.id }) {
             let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: completionRecord.date) ?? Date()
             return date >= completionRecord.date && date < nextDay

@@ -12,14 +12,14 @@ struct Tracker: Codable {
     let name: String
     let color: String
     let emoji: String
-    let schedule: TrackerSchedule?
+    let schedule: Set<WeekDay>?
     
     var formattedSchedule: String {
-        if let schedule = schedule {
-            return schedule.days.map { $0.displayName }.joined(separator: ", ")
-        } else {
-            return "Нерегулярное событие"
-        }
+           if let schedule = schedule {
+               return schedule.map { $0.displayName }.joined(separator: ", ")
+           } else {
+               return "Нерегулярное событие"
+           }
     }
 }
 
@@ -42,7 +42,4 @@ struct TrackerRecord: Codable, Hashable, Equatable {
     }
 }
 
-struct TrackerSchedule: Codable {
-    let trackerId: String
-    let days: Set<WeekDay>
-}
+
