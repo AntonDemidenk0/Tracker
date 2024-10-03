@@ -7,16 +7,17 @@
 
 import UIKit
 
-final class TrackersViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TrackerCellDelegate, UITextFieldDelegate {
+final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
-    
+    private let trackerStore = TrackerStore()
+    private let trackerCategoryStore = TrackerCategoryStore()
     private var trackers: [Tracker] = []
     private var filteredCategories: [TrackerCategory] = []
     private var categories: [TrackerCategory] = [] {
         didSet {
+            trackerCategoryStore.saveCategories()
             print("Categories updated: \(categories.count) categories.")
-            saveCategories()
         }
     }
     private var currentDate: Date = Date() {
@@ -26,7 +27,6 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
         }
     }
     
-    private var trackerCreationDates: [UUID: Date] = [:]
     private var completedTrackers: Set<TrackerRecord> = []
     
     // MARK: - UI Elements
@@ -108,9 +108,8 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
-        setupNavigationBar()
-        loadTrackerCreationDates()
         loadCategories()
+        setupNavigationBar()
         loadCompletedTrackers()
         updateUIForTrackers()
         searchTextField.delegate = self
@@ -180,8 +179,50 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
+
+    // MARK: - Actions
     
-    // MARK: - UICollectionViewDataSource
+    @objc private func addNewTracker(_ sender: UIButton) {
+        let newTrackerVC = NewTrackerViewController()
+        
+        if let trackersVC = self.navigationController?.viewControllers.first(where: { $0 is TrackersViewController }) as? TrackersViewController {
+            newTrackerVC.trackersViewController = trackersVC
+        } else {
+            print("TrackersViewController не найден в навигационном стеке")
+        }
+        let navController = UINavigationController(rootViewController: newTrackerVC)
+        self.present(navController, animated: true)
+    }
+    
+    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
+        currentDate = sender.date
+        print("Date picker value changed to: \(currentDate)")
+        updateUIForTrackers()
+    }
+    
+    func addTracker(_ tracker: Tracker, toCategoryTitle categoryTitle: String) {
+        print("Adding tracker: \(tracker) to category: \(categoryTitle)")
+
+        do {
+            try trackerStore.addTracker(tracker, to: categoryTitle)
+            categories = trackerCategoryStore.categories
+            saveCategories()
+            loadCategories()
+            updateUIForTrackers()
+            collectionView.reloadData()
+        } catch {
+            print("Failed to add tracker: \(error)")
+        }
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
+// MARK: - UICollectionViewDataSource
+extension TrackersViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return filteredCategories.count
@@ -236,8 +277,11 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 18)
     }
-    
-    // MARK: - Tracker Management
+}
+
+
+// MARK: - Tracker Management
+extension TrackersViewController {
     
     func completeTracker(tracker: Tracker, date: Date) {
         let trackerRecord = TrackerRecord(trackerId: tracker.id, date: date)
@@ -313,10 +357,6 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
     private func shouldDisplayTracker(_ tracker: Tracker, on date: Date) -> Bool {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
-        /* if let creationDate = trackerCreationDates[tracker.id], calendar.compare(creationDate, to: date, toGranularity: .day) == .orderedDescending {
-         return false
-     }
-        */
         if let schedule = tracker.schedule {
             let currentWeekDay = calendar.component(.weekday, from: date)
             guard let selectedWeekDay = WeekDay(rawValue: currentWeekDay == 1 ? 7 : currentWeekDay - 1) else {
@@ -329,100 +369,31 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
         }
         return true
     }
-    
-    // MARK: - Actions
-    
-    @objc private func addNewTracker(_ sender: UIButton) {
-        let newTrackerVC = NewTrackerViewController()
-        
-        if let trackersVC = self.navigationController?.viewControllers.first(where: { $0 is TrackersViewController }) as? TrackersViewController {
-            newTrackerVC.trackersViewController = trackersVC
-        } else {
-            print("TrackersViewController не найден в навигационном стеке")
-        }
-        let navController = UINavigationController(rootViewController: newTrackerVC)
-        self.present(navController, animated: true)
-    }
-    
-    @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
-        currentDate = sender.date
-        print("Date picker value changed to: \(currentDate)")
-        updateUIForTrackers()
-    }
-    
-    func addTracker(_ tracker: Tracker, toCategoryTitle categoryTitle: String) {
-        print("Adding tracker: \(tracker) to category: \(categoryTitle)")
-        
-        var newCategories = [TrackerCategory]()
-        var foundCategory = false
-        
-        for category in categories {
-            if category.title == categoryTitle {
-                print("Category found: \(categoryTitle)")
-                var updatedTrackers = category.trackers
-                updatedTrackers.append(tracker)
-                let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
-                newCategories.append(updatedCategory)
-                foundCategory = true
-            } else {
-                newCategories.append(category)
-            }
-        }
-        
-        if !foundCategory {
-            print("Category not found, creating new category: \(categoryTitle)")
-            let newCategory = TrackerCategory(title: categoryTitle, trackers: [tracker])
-            newCategories.append(newCategory)
-        }
-        
-        trackerCreationDates[tracker.id] = Date()
-        saveTrackerCreationDate(tracker.id, date: trackerCreationDates[tracker.id] ?? Date())
-        
-        categories = newCategories
-        updateUIForTrackers()
-        saveCategories()
-        collectionView.reloadData()
-    }
-    
-    // MARK: - Data Persistence
-    
-    private func saveTrackerCreationDate(_ trackerId: UUID, date: Date) {
-        trackerCreationDates[trackerId] = date
-        let encoder = JSONEncoder()
-        do {
-            let creationDateData = try encoder.encode(trackerCreationDates)
-            UserDefaults.standard.set(creationDateData, forKey: "TrackerCreationDates")
-            print("Дата создания трекера сохранена: \(trackerId) - \(date)")
-        } catch {
-            print("Ошибка при сохранении даты создания трекера: \(error)")
-        }
-    }
-    
-    private func loadTrackerCreationDates() {
-        if let savedDatesData = UserDefaults.standard.data(forKey: "TrackerCreationDates") {
-            let decoder = JSONDecoder()
-            do {
-                trackerCreationDates = try decoder.decode([UUID: Date].self, from: savedDatesData)
-                print("Загружены даты создания трекеров: \(trackerCreationDates)")
-            } catch {
-                print("Ошибка при декодировании: \(error)")
-            }
-        }
-    }
+}
+
+// MARK: - Data Persistence
+extension TrackersViewController: TrackerCellDelegate {
     
     private func saveCategories() {
-        let encoder = JSONEncoder()
-        if let encodedCategories = try? encoder.encode(categories) {
-            UserDefaults.standard.set(encodedCategories, forKey: "SavedCategoriesWithTrackers")
+        do {
+            let existingCategories = trackerCategoryStore.fetchCategories()
+            for category in categories {
+                if !existingCategories.contains(where: { $0.title == category.title }) {
+                    try trackerCategoryStore.addNewCategory(category)
+                }
+            }
+            trackerCategoryStore.saveCategories()
+        } catch {
+            print("Ошибка при сохранении категорий: \(error)")
         }
     }
-    
-    private func loadCategories() {
-        if let savedCategoriesData = UserDefaults.standard.data(forKey: "SavedCategoriesWithTrackers") {
-            let decoder = JSONDecoder()
-            if let decodedCategories = try? decoder.decode([TrackerCategory].self, from: savedCategoriesData) {
-                categories = decodedCategories
-            }
+
+    func loadCategories() {
+        do {
+            categories = try trackerCategoryStore.fetchCategories()
+            collectionView.reloadData()
+        } catch {
+            print("Ошибка при загрузке категорий: \(error)")
         }
     }
     
@@ -466,10 +437,5 @@ final class TrackersViewController: UIViewController, UICollectionViewDelegate, 
         
         saveCompletedTrackers()
         updateUIForTrackers()
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
     }
 }

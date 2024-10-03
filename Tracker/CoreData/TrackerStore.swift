@@ -38,7 +38,7 @@ protocol TrackerStoreDelegate: AnyObject {
 }
 
 final class TrackerStore: NSObject {
-    private let context: NSManagedObjectContext
+    let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>!
     weak var delegate: TrackerStoreDelegate?
     private var insertedIndexes: IndexSet?
@@ -81,22 +81,52 @@ final class TrackerStore: NSObject {
         return trackers
     }
     
-    func addNewTracker(_ tracker: Tracker, to category: TrackerCategoryCoreData) throws {
-        let trackerCoreData = TrackerCoreData(context: context)
-        
-        trackerCoreData.id = tracker.id
-        trackerCoreData.name = tracker.name
-        trackerCoreData.color = tracker.color
-        trackerCoreData.emoji = tracker.emoji
-        
-        if let schedule = tracker.schedule {
-            trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
+    func addTracker(_ tracker: Tracker, to categoryTitle: String) throws {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "title == %@", categoryTitle)
+
+        // Пытаемся найти категорию
+        if let category = try context.fetch(fetchRequest).first {
+            // Проверяем, существует ли трекер в категории
+            if category.tracker?.contains(where: { ($0 as? TrackerCoreData)?.id == tracker.id }) == true {
+                print("Tracker with id \(tracker.id) already exists in category \(category.title)")
+                return // Если трекер уже существует, ничего не добавляем
+            }
+
+            // Если трекер не существует, создаем его и добавляем в категорию
+            let trackerCoreData = TrackerCoreData(context: context)
+            trackerCoreData.id = tracker.id
+            trackerCoreData.name = tracker.name
+            trackerCoreData.color = tracker.color
+            trackerCoreData.emoji = tracker.emoji
+            
+            if let schedule = tracker.schedule {
+                trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
+            }
+            
+            trackerCoreData.category = category
+            try context.save() // Сохраняем изменения в контексте
+        } else {
+            // Если категории нет, создаем новую категорию
+            let newCategory = TrackerCategoryCoreData(context: context)
+            newCategory.title = categoryTitle
+            
+            // Создаем трекер и добавляем в новую категорию
+            let trackerCoreData = TrackerCoreData(context: context)
+            trackerCoreData.id = tracker.id
+            trackerCoreData.name = tracker.name
+            trackerCoreData.color = tracker.color
+            trackerCoreData.emoji = tracker.emoji
+            
+            if let schedule = tracker.schedule {
+                trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
+            }
+            
+            trackerCoreData.category = newCategory
+            try context.save() // Сохраняем изменения в контексте
         }
-    
-        trackerCoreData.category = category
-        
-        try context.save()
     }
+
     
     func tracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
         guard let id = trackerCoreData.id else {

@@ -10,7 +10,7 @@ import UIKit
 final class NewUsualTrackerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
     
     // MARK: - Properties
-    
+    private let trackerStore = TrackerStore()
     private var selectedCategory: String?
     private var selectedDaysString: String = "" {
         didSet {
@@ -434,43 +434,33 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             return
         }
         
-        
         let scheduleArray: [String]
         if selectedDaysString == "Каждый день" || selectedDaysString.isEmpty {
-            
             scheduleArray = WeekDay.allCases.map { $0.shortName }
         } else {
             scheduleArray = selectedDaysString.components(separatedBy: ", ")
         }
         
-        print("Schedule Array: \(scheduleArray)")
-        
         let scheduleSet: Set<WeekDay> = Set(scheduleArray.compactMap { WeekDay(shortName: $0.trimmingCharacters(in: .whitespaces)) })
-        print("Schedule Set: \(scheduleSet)")
-        
-        
-        let trackerSchedule = TrackerSchedule(trackerId: UUID().uuidString, days: scheduleSet)
-        
         
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
             color: selectedColorName,
             emoji: selectedEmoji,
-            schedule: trackerSchedule
+            schedule: scheduleSet
         )
         
-        print("New Tracker: \(newTracker)")
+        guard let categoryTitle = selectedCategory else {
+            print("Категория не выбрана")
+            return
+        }
         
-        if let handler = completionHandler, let categoryTitle = selectedCategory {
-            print("Completion Handler вызывается")
-            handler(newTracker, categoryTitle)
-            dismiss(animated: true, completion: nil)
-        } else {
-            print("Completion Handler не установлен или категория не выбрана")
-        }
-        if let handler = closeNewTrackerVCHandler {
-            handler()
-        }
+        completionHandler?(newTracker, categoryTitle)
+        print("Completion handler called with tracker: \(newTracker) and category: \(categoryTitle)")
+        
+        dismiss(animated: true, completion: nil)
+        
+        closeNewTrackerVCHandler?()
     }
 }

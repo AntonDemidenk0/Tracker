@@ -13,17 +13,18 @@ protocol CategorySelectionDelegate: AnyObject {
 }
 
 final class CategoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NewCategoryViewControllerDelegate {
-    
+    private let trackerCategoryStore = TrackerCategoryStore()
     weak var delegate: CategorySelectionDelegate?
     
     private var categories: [String] = [] {
         didSet {
-            UserDefaults.standard.set(categories, forKey: "SavedCategories")
+            trackerCategoryStore.saveCategories()
+            }
         }
-    }
+    
     var selectedCategory: String? {
         didSet {
-            UserDefaults.standard.set(selectedCategory, forKey: "SelectedCategory")
+            trackerCategoryStore.updateSelectedCategory(with: selectedCategory)
         }
     }
     
@@ -75,13 +76,13 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         navigationItem.title = "Категория"
         view.backgroundColor = .white
         
-        if let savedCategories = UserDefaults.standard.array(forKey: "SavedCategories") as? [String] {
-            categories = savedCategories
+        if let savedCategories = try? trackerCategoryStore.fetchCategories() {
+            categories = savedCategories.map { $0.title }
         }
         
-        if let savedSelectedCategory = UserDefaults.standard.string(forKey: "SelectedCategory") {
-            selectedCategory = savedSelectedCategory
-        }
+        if let savedSelectedCategory = try? trackerCategoryStore.loadSelectedCategory() {
+                selectedCategory = savedSelectedCategory.title
+            }
         
         view.addSubview(stubImageView)
         view.addSubview(stubLabel)
@@ -201,9 +202,16 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     }
     
     func didAddCategory(_ category: String) {
-        categories.append(category)
-        tableView.reloadData()
-        updateUI()
+        let newCategory = TrackerCategory(title: category, trackers: [])
+        
+        do {
+            try trackerCategoryStore.addNewCategory(newCategory)
+            categories.append(category)
+            tableView.reloadData()
+            updateUI()
+        } catch {
+            print("Ошибка при добавлении категории: \(error)")
+        }
     }
     
     @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
@@ -225,7 +233,15 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     private func deleteCategory(at indexPath: IndexPath) {
         let categoryToDelete = categories[indexPath.row]
-        
+
+        do {
+            try trackerCategoryStore.deleteCategory(withTitle: categoryToDelete)
+        } catch {
+            print("Ошибка при удалении категории: \(error)")
+            return
+        }
+
+
         categories.remove(at: indexPath.row)
         
         if selectedCategory == categoryToDelete {

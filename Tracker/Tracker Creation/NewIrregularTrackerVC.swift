@@ -297,30 +297,32 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
             print("Необходимо ввести название трекера")
             return
         }
-        
+
         guard let selectedColorName = colorVC.selectedColorName else {
             print("Не выбран цвет")
             return
         }
-        
+
         guard let selectedEmoji = emojiVC.selectedEmoji else {
             print("Не выбран эмодзи")
             return
         }
-        
+
         let irregularTracker = Tracker(id: UUID(), name: trackerName, color: selectedColorName, emoji: selectedEmoji, schedule: nil)
-        
-        if let handler = completionHandler, let categoryTitle = selectedCategory {
-            print("Completion Handler вызывается")
-            handler(irregularTracker, categoryTitle)
-            dismiss(animated: true, completion: nil)
-        } else {
-            print("Completion Handler не установлен или категория не выбрана")
+
+        guard let categoryTitle = selectedCategory else {
+            print("Категория не выбрана")
+            return
         }
-        if let handler = closeNewTrackerVCHandler {
-            handler()
-        }
+
+        completionHandler?(irregularTracker, categoryTitle)
+        print("Completion handler called with tracker: \(irregularTracker) and category: \(categoryTitle)")
+
+        dismiss(animated: true, completion: nil)
+
+        closeNewTrackerVCHandler?()
     }
+
 
 
     // MARK: - UITextFieldDelegate
