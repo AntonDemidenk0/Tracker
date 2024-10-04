@@ -30,7 +30,6 @@ final class TrackerCategoryStore: NSObject {
         self.trackerStore = try TrackerStore(context: context)
         super.init()
         
-        loadSelectedCategory()
         setupFetchedResultsController()
     }
     
@@ -60,24 +59,23 @@ final class TrackerCategoryStore: NSObject {
         else { return [] }
         return categories
     }
-
+    
     func fetchCategories() -> [TrackerCategory] {
         do {
-            try setupFetchedResultsController() // Обновляем контроллер перед загрузкой
+            try setupFetchedResultsController()
             return categories
         } catch {
             print("Ошибка при загрузке категорий: \(error)")
             return []
         }
     }
-
+    
     func addNewCategory(_ category: TrackerCategory) throws {
         print("Adding new category: \(category.title)")
         
         let categoryCoreData = TrackerCategoryCoreData(context: context)
         categoryCoreData.title = category.title
         
-        // Отладка: Выводим трекеры категории
         print("Trackers in category: \(category.trackers.count)")
         
         let trackerCoreDataList: [TrackerCoreData] = category.trackers.compactMap { tracker -> TrackerCoreData? in
@@ -101,7 +99,6 @@ final class TrackerCategoryStore: NSObject {
         
         categoryCoreData.tracker = NSSet(array: trackerCoreDataList)
         
-        // Отладка: Выводим количество трекеров в категории
         print("Total trackers added to category \(category.title): \(trackerCoreDataList.count)")
         
         try context.save()
@@ -111,7 +108,7 @@ final class TrackerCategoryStore: NSObject {
     func deleteCategory(withTitle title: String) throws {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-
+        
         do {
             let results = try context.fetch(fetchRequest)
             for category in results {
@@ -123,19 +120,19 @@ final class TrackerCategoryStore: NSObject {
             throw error
         }
     }
-
+    
     func category(from categoryCoreData: TrackerCategoryCoreData) throws -> TrackerCategory {
         guard let title = categoryCoreData.title else {
             throw TrackerStoreError.decodingErrorInvalidTitle
         }
-
+        
         let trackers = categoryCoreData.tracker?.compactMap { trackerCoreData in
             return try? trackerStore.tracker(from: trackerCoreData as! TrackerCoreData)
         } ?? []
-
+        
         return TrackerCategory(title: title, trackers: trackers)
     }
-
+    
     func saveCategories() {
         do {
             try context.save()
@@ -144,15 +141,15 @@ final class TrackerCategoryStore: NSObject {
             print("Ошибка при сохранении категорий: \(error)")
         }
     }
-
+    
     func saveSelectedCategory() {
         clearPreviousSelections()
-
+        
         if let selectedCategory = selectedCategory {
             let categoryCoreData = TrackerCategoryCoreData(context: context)
             categoryCoreData.title = selectedCategory.title
             categoryCoreData.isSelected = true
-
+            
             try? context.save()
         }
     }
@@ -160,7 +157,7 @@ final class TrackerCategoryStore: NSObject {
     func loadSelectedCategory() -> TrackerCategory? {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "isSelected == true")
-
+        
         do {
             let results = try context.fetch(fetchRequest)
             return results.first.flatMap { try? category(from: $0) }
@@ -173,7 +170,7 @@ final class TrackerCategoryStore: NSObject {
     private func clearPreviousSelections() {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "isSelected == true")
-
+        
         do {
             let results = try context.fetch(fetchRequest)
             for category in results {
@@ -184,15 +181,15 @@ final class TrackerCategoryStore: NSObject {
             print("Ошибка при сбросе предыдущих выборов: \(error)")
         }
     }
-
+    
     func updateSelectedCategory(with title: String?) {
         clearPreviousSelections()
-
+        
         guard let title = title else { return }
-
+        
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-
+        
         do {
             let results = try context.fetch(fetchRequest)
             if let categoryCoreData = results.first {
@@ -209,10 +206,10 @@ final class TrackerCategoryStore: NSObject {
 extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
     }
-
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
     }
-
+    
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,

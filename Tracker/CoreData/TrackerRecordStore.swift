@@ -10,7 +10,7 @@ import CoreData
 import UIKit
 
 final class TrackerRecordStore: NSObject {
-    private let context: NSManagedObjectContext
+    let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>!
 
     convenience override init() {
@@ -31,7 +31,7 @@ final class TrackerRecordStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        controller.delegate = self // Устанавливаем делегат
+        controller.delegate = self
         self.fetchedResultsController = controller
         try controller.performFetch()
     }
@@ -61,6 +61,21 @@ final class TrackerRecordStore: NSObject {
 
         return TrackerRecord(trackerId: trackerId, date: date)
     }
+    
+    func removeRecord(for trackerId: UUID, on date: Date) throws {
+            let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+            fetchRequest.predicate = NSPredicate(
+                format: "trackerId == %@ AND date == %@",
+                trackerId.uuidString, date as CVarArg
+            )
+
+            let objects = try context.fetch(fetchRequest)
+            for object in objects {
+                context.delete(object)
+            }
+
+            try context.save()
+        }
 }
 
 // MARK: - NSFetchedResultsControllerDelegate

@@ -69,10 +69,10 @@ final class TrackerStore: NSObject {
     }
     
     func fetchCategories() throws -> [TrackerCategoryCoreData] {
-            let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-            return try context.fetch(fetchRequest)
-        }
-
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        return try context.fetch(fetchRequest)
+    }
+    
     var trackers: [Tracker] {
         guard
             let objects = self.fetchedResultsController.fetchedObjects,
@@ -84,16 +84,13 @@ final class TrackerStore: NSObject {
     func addTracker(_ tracker: Tracker, to categoryTitle: String) throws {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", categoryTitle)
-
-        // Пытаемся найти категорию
+        
         if let category = try context.fetch(fetchRequest).first {
-            // Проверяем, существует ли трекер в категории
             if category.tracker?.contains(where: { ($0 as? TrackerCoreData)?.id == tracker.id }) == true {
                 print("Tracker with id \(tracker.id) already exists in category \(category.title)")
-                return // Если трекер уже существует, ничего не добавляем
+                return
             }
-
-            // Если трекер не существует, создаем его и добавляем в категорию
+            
             let trackerCoreData = TrackerCoreData(context: context)
             trackerCoreData.id = tracker.id
             trackerCoreData.name = tracker.name
@@ -105,13 +102,11 @@ final class TrackerStore: NSObject {
             }
             
             trackerCoreData.category = category
-            try context.save() // Сохраняем изменения в контексте
+            try context.save()
         } else {
-            // Если категории нет, создаем новую категорию
             let newCategory = TrackerCategoryCoreData(context: context)
             newCategory.title = categoryTitle
             
-            // Создаем трекер и добавляем в новую категорию
             let trackerCoreData = TrackerCoreData(context: context)
             trackerCoreData.id = tracker.id
             trackerCoreData.name = tracker.name
@@ -123,10 +118,9 @@ final class TrackerStore: NSObject {
             }
             
             trackerCoreData.category = newCategory
-            try context.save() // Сохраняем изменения в контексте
+            try context.save()
         }
     }
-
     
     func tracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
         guard let id = trackerCoreData.id else {
@@ -166,7 +160,7 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         updatedIndexes = IndexSet()
         movedIndexes = Set<TrackerStoreUpdate.Move>()
     }
-
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         delegate?.store(
             self,
@@ -182,7 +176,7 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         updatedIndexes = nil
         movedIndexes = nil
     }
-
+    
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,

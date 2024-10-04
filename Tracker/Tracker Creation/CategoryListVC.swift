@@ -19,8 +19,8 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     private var categories: [String] = [] {
         didSet {
             trackerCategoryStore.saveCategories()
-            }
         }
+    }
     
     var selectedCategory: String? {
         didSet {
@@ -81,8 +81,8 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         }
         
         if let savedSelectedCategory = try? trackerCategoryStore.loadSelectedCategory() {
-                selectedCategory = savedSelectedCategory.title
-            }
+            selectedCategory = savedSelectedCategory.title
+        }
         
         view.addSubview(stubImageView)
         view.addSubview(stubLabel)
@@ -233,15 +233,15 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     private func deleteCategory(at indexPath: IndexPath) {
         let categoryToDelete = categories[indexPath.row]
-
+        
         do {
             try trackerCategoryStore.deleteCategory(withTitle: categoryToDelete)
         } catch {
             print("Ошибка при удалении категории: \(error)")
             return
         }
-
-
+        
+        
         categories.remove(at: indexPath.row)
         
         if selectedCategory == categoryToDelete {
