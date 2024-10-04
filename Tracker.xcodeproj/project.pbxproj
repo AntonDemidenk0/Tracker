@@ -510,8 +510,8 @@
 			);
 			currentVersion = 1F9FB35D2CA2F1A2001ACF03 /* TrackerModel.xcdatamodel */;
 			name = TrackerModel.xcdatamodeld;
-			path = /Users/antondemidenko/dev/Tracker/Tracker/TrackerModel.xcdatamodeld;
-			sourceTree = "<group>";
+			path = Tracker/TrackerModel.xcdatamodeld;
+			sourceTree = SOURCE_ROOT;
 			versionGroupType = wrapper.xcdatamodel;
 		};
 /* End XCVersionGroup section */
