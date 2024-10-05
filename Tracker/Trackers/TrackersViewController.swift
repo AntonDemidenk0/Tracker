@@ -459,5 +459,4 @@ extension TrackersViewController: TrackerCellDelegate {
         
         updateUIForTrackers()
     }
-    
 }

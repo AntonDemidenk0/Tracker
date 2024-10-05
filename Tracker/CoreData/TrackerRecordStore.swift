@@ -12,70 +12,106 @@ import UIKit
 final class TrackerRecordStore: NSObject {
     let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>!
-
+    
+    // MARK: - Initializers
+    
     convenience override init() {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         try! self.init(context: context)
     }
-
+    
     init(context: NSManagedObjectContext) throws {
         self.context = context
         super.init()
-
+        setupFetchedResultsController()
+    }
+    
+    // MARK: - Public Methods
+    
+    var trackerRecords: [TrackerRecord] {
+        return fetchTrackerRecords()
+    }
+    
+    func addNewRecord(_ record: TrackerRecord) throws {
+        try saveNewRecord(record)
+    }
+    
+    func removeRecord(for trackerId: UUID, on date: Date) throws {
+        try deleteRecord(for: trackerId, on: date)
+    }
+    
+    func record(from recordCoreData: TrackerRecordCoreData) throws -> TrackerRecord {
+        return try decodeRecord(from: recordCoreData)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupFetchedResultsController() {
         let fetchRequest = TrackerRecordCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \TrackerRecordCoreData.date, ascending: true)]
-
-        let controller = NSFetchedResultsController(
+        
+        fetchedResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        controller.delegate = self
-        self.fetchedResultsController = controller
-        try controller.performFetch()
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            print("Ошибка при выполнении fetch: \(error)")
+        }
     }
-
-    var trackerRecords: [TrackerRecord] {
+    
+    private func fetchTrackerRecords() -> [TrackerRecord] {
         guard
-            let objects = self.fetchedResultsController.fetchedObjects,
-            let records = try? objects.map({ try self.record(from: $0) })
+            let objects = fetchedResultsController.fetchedObjects,
+            let records = try? objects.map({ try self.decodeRecord(from: $0) })
         else { return [] }
         return records
     }
-
-    func addNewRecord(_ record: TrackerRecord) throws {
+    
+    private func saveNewRecord(_ record: TrackerRecord) throws {
         let trackerRecordCoreData = TrackerRecordCoreData(context: context)
         trackerRecordCoreData.trackerId = record.trackerId
         trackerRecordCoreData.date = record.date
-        try context.save()
+        try saveContext()
     }
-
-    func record(from recordCoreData: TrackerRecordCoreData) throws -> TrackerRecord {
+    
+    private func deleteRecord(for trackerId: UUID, on date: Date) throws {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(
+            format: "trackerId == %@ AND date == %@",
+            trackerId.uuidString, date as CVarArg
+        )
+        
+        let objects = try context.fetch(fetchRequest)
+        for object in objects {
+            context.delete(object)
+        }
+        try saveContext()
+    }
+    
+    private func decodeRecord(from recordCoreData: TrackerRecordCoreData) throws -> TrackerRecord {
         guard let trackerId = recordCoreData.trackerId else {
             throw TrackerStoreError.decodingErrorInvalidID
         }
         guard let date = recordCoreData.date else {
             throw TrackerStoreError.decodingErrorInvalidDate
         }
-
         return TrackerRecord(trackerId: trackerId, date: date)
     }
     
-    func removeRecord(for trackerId: UUID, on date: Date) throws {
-            let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(
-                format: "trackerId == %@ AND date == %@",
-                trackerId.uuidString, date as CVarArg
-            )
-
-            let objects = try context.fetch(fetchRequest)
-            for object in objects {
-                context.delete(object)
-            }
-
+    private func saveContext() throws {
+        do {
             try context.save()
+        } catch {
+            print("Ошибка при сохранении контекста: \(error)")
+            throw error
         }
+    }
 }
 
 // MARK: - NSFetchedResultsControllerDelegate
@@ -84,11 +120,11 @@ extension TrackerRecordStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         print("Will change content")
     }
-
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         print("Did change content")
     }
-
+    
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,

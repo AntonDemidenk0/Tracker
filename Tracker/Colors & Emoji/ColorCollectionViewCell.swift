@@ -27,7 +27,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
             colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
-        contentView.layer.cornerRadius = 16
+        contentView.layer.cornerRadius = 8
         contentView.layer.masksToBounds = true
     }
     

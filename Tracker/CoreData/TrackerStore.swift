@@ -46,42 +46,71 @@ final class TrackerStore: NSObject {
     private var updatedIndexes: IndexSet?
     private var movedIndexes: Set<TrackerStoreUpdate.Move>?
     
+    // MARK: - Initializers
+    
     convenience override init() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        try! self.init(context: context)
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("Unable to retrieve AppDelegate")
+        }
+        self.init(context: appDelegate.persistentContainer.viewContext)
     }
-    init(context: NSManagedObjectContext) throws {
+    
+    init(context: NSManagedObjectContext) {
         self.context = context
         super.init()
-        
+        setupFetchedResultsController()
+    }
+    
+    // MARK: - Public Methods
+    
+    func fetchCategories() throws -> [TrackerCategoryCoreData] {
+        return try fetchCategoriesCoreData()
+    }
+    
+    var trackers: [Tracker] {
+        return fetchedTrackers()
+    }
+    
+    func addTracker(_ tracker: Tracker, to categoryTitle: String) throws {
+        try addTrackerToCategory(tracker, categoryTitle: categoryTitle)
+        try saveContext()
+    }
+    
+    func getTracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
+        return try tracker(from: trackerCoreData)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupFetchedResultsController() {
         let fetchRequest = TrackerCoreData.fetchRequest()
-        fetchRequest.sortDescriptors = [ NSSortDescriptor(keyPath: \TrackerCoreData.id, ascending: true)
-        ]
-        let controller = NSFetchedResultsController(
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \TrackerCoreData.id, ascending: true)]
+        
+        fetchedResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        controller.delegate = self
-        self.fetchedResultsController = controller
-        try controller.performFetch()
+        fetchedResultsController.delegate = self
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            print("Failed to fetch trackers: \(error)")
+        }
     }
     
-    func fetchCategories() throws -> [TrackerCategoryCoreData] {
+    private func fetchCategoriesCoreData() throws -> [TrackerCategoryCoreData] {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         return try context.fetch(fetchRequest)
     }
     
-    var trackers: [Tracker] {
-        guard
-            let objects = self.fetchedResultsController.fetchedObjects,
-            let trackers = try? objects.map({ try self.tracker(from: $0) })
-        else { return [] }
-        return trackers
+    private func fetchedTrackers() -> [Tracker] {
+        guard let objects = fetchedResultsController.fetchedObjects else { return [] }
+        return objects.compactMap { try? tracker(from: $0) }
     }
     
-    func addTracker(_ tracker: Tracker, to categoryTitle: String) throws {
+    private func addTrackerToCategory(_ tracker: Tracker, categoryTitle: String) throws {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "title == %@", categoryTitle)
         
@@ -90,39 +119,29 @@ final class TrackerStore: NSObject {
                 print("Tracker with id \(tracker.id) already exists in category \(category.title)")
                 return
             }
-            
-            let trackerCoreData = TrackerCoreData(context: context)
-            trackerCoreData.id = tracker.id
-            trackerCoreData.name = tracker.name
-            trackerCoreData.color = tracker.color
-            trackerCoreData.emoji = tracker.emoji
-            
-            if let schedule = tracker.schedule {
-                trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
-            }
-            
-            trackerCoreData.category = category
-            try context.save()
+            try createTrackerCoreData(tracker, in: category)
         } else {
             let newCategory = TrackerCategoryCoreData(context: context)
             newCategory.title = categoryTitle
-            
-            let trackerCoreData = TrackerCoreData(context: context)
-            trackerCoreData.id = tracker.id
-            trackerCoreData.name = tracker.name
-            trackerCoreData.color = tracker.color
-            trackerCoreData.emoji = tracker.emoji
-            
-            if let schedule = tracker.schedule {
-                trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
-            }
-            
-            trackerCoreData.category = newCategory
-            try context.save()
+            try createTrackerCoreData(tracker, in: newCategory)
         }
     }
     
-    func tracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
+    private func createTrackerCoreData(_ tracker: Tracker, in category: TrackerCategoryCoreData) throws {
+        let trackerCoreData = TrackerCoreData(context: context)
+        trackerCoreData.id = tracker.id
+        trackerCoreData.name = tracker.name
+        trackerCoreData.color = tracker.color
+        trackerCoreData.emoji = tracker.emoji
+        
+        if let schedule = tracker.schedule {
+            trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
+        }
+        
+        trackerCoreData.category = category
+    }
+    
+    private func tracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
         guard let id = trackerCoreData.id else {
             throw TrackerStoreError.decodingErrorInvalidID
         }
@@ -135,14 +154,16 @@ final class TrackerStore: NSObject {
         guard let emoji = trackerCoreData.emoji else {
             throw TrackerStoreError.decodingErrorInvalidEmoji
         }
+        
         var days: Set<WeekDay>? = nil
-        if let scheduleData = trackerCoreData.schedule {
+        if let scheduleData = trackerCoreData.schedule as? Data {
             do {
-                days = try JSONDecoder().decode(Set<WeekDay>.self, from: scheduleData as! Data)
+                days = try JSONDecoder().decode(Set<WeekDay>.self, from: scheduleData)
             } catch {
                 throw TrackerStoreError.decodingErrorInvalidSchedule
             }
         }
+        
         return Tracker(
             id: id,
             name: name,
@@ -151,7 +172,16 @@ final class TrackerStore: NSObject {
             schedule: days
         )
     }
+    
+    
+    private func saveContext() throws {
+        if context.hasChanges {
+            try context.save()
+        }
+    }
 }
+
+// MARK: - NSFetchedResultsControllerDelegate
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
