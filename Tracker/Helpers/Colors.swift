@@ -29,6 +29,7 @@ enum AppColor: String, CaseIterable {
     case CBrightGreen
 
     var color: UIColor {
-        return UIColor(named: self.rawValue)!
+        return UIColor(named: self.rawValue) ?? UIColor.clear
     }
 }
+

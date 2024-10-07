@@ -409,8 +409,6 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     private func saveCompletedTrackers() {
-        let trackerRecordStore = TrackerRecordStore()
-        
         for trackerRecord in completedTrackers {
             do {
                 try trackerRecordStore.addNewRecord(trackerRecord)
@@ -418,13 +416,10 @@ extension TrackersViewController: TrackerCellDelegate {
                 print("Ошибка при сохранении записи: \(error)")
             }
         }
-        
         print("Сохранено в CoreData: \(completedTrackers)")
     }
     
     private func loadCompletedTrackers() {
-        let trackerRecordStore = TrackerRecordStore()
-        
         completedTrackers = Set(trackerRecordStore.trackerRecords)
         print("Загружено из CoreData: \(completedTrackers)")
     }
@@ -454,7 +449,6 @@ extension TrackersViewController: TrackerCellDelegate {
                 print("Ошибка добавления записи в Core Data: \(error)")
             }
         }
-        
         saveCompletedTrackers()
         
         updateUIForTrackers()

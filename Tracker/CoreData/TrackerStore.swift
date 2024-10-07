@@ -38,8 +38,8 @@ protocol TrackerStoreDelegate: AnyObject {
 }
 
 final class TrackerStore: NSObject {
-    let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>!
+    private let context: NSManagedObjectContext
+    private var fetchedResultsController: NSFetchedResultsController<TrackerCoreData>?
     weak var delegate: TrackerStoreDelegate?
     private var insertedIndexes: IndexSet?
     private var deletedIndexes: IndexSet?
@@ -63,10 +63,6 @@ final class TrackerStore: NSObject {
     
     // MARK: - Public Methods
     
-    func fetchCategories() throws -> [TrackerCategoryCoreData] {
-        return try fetchCategoriesCoreData()
-    }
-    
     var trackers: [Tracker] {
         return fetchedTrackers()
     }
@@ -76,25 +72,24 @@ final class TrackerStore: NSObject {
         try saveContext()
     }
     
-    func getTracker(from trackerCoreData: TrackerCoreData) throws -> Tracker {
-        return try tracker(from: trackerCoreData)
-    }
-    
     // MARK: - Private Methods
     
     private func setupFetchedResultsController() {
         let fetchRequest = TrackerCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \TrackerCoreData.id, ascending: true)]
         
-        fetchedResultsController = NSFetchedResultsController(
+        let controller = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        fetchedResultsController.delegate = self
+        
+        controller.delegate = self
+        fetchedResultsController = controller
+        
         do {
-            try fetchedResultsController.performFetch()
+            try fetchedResultsController?.performFetch()
         } catch {
             print("Failed to fetch trackers: \(error)")
         }
@@ -106,7 +101,11 @@ final class TrackerStore: NSObject {
     }
     
     private func fetchedTrackers() -> [Tracker] {
-        guard let objects = fetchedResultsController.fetchedObjects else { return [] }
+        guard let fetchedResultsController = fetchedResultsController,
+              let objects = fetchedResultsController.fetchedObjects else {
+            return []
+        }
+        
         return objects.compactMap { try? tracker(from: $0) }
     }
     
@@ -184,6 +183,7 @@ final class TrackerStore: NSObject {
 // MARK: - NSFetchedResultsControllerDelegate
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
+    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         insertedIndexes = IndexSet()
         deletedIndexes = IndexSet()
@@ -192,13 +192,18 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        let inserted = insertedIndexes ?? []
+        let deleted = deletedIndexes ?? []
+        let updated = updatedIndexes ?? []
+        let moved = movedIndexes ?? []
+        
         delegate?.store(
             self,
             didUpdate: TrackerStoreUpdate(
-                insertedIndexes: insertedIndexes!,
-                deletedIndexes: deletedIndexes!,
-                updatedIndexes: updatedIndexes!,
-                movedIndexes: movedIndexes!
+                insertedIndexes: inserted,
+                deletedIndexes: deleted,
+                updatedIndexes: updated,
+                movedIndexes: moved
             )
         )
         insertedIndexes = nil
@@ -206,6 +211,7 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         updatedIndexes = nil
         movedIndexes = nil
     }
+    
     
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,

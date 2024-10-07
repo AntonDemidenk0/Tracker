@@ -9,35 +9,38 @@ import Foundation
 import UIKit
 
 final class EmojiViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
+
     weak var newUsualVC: NewUsualTrackerViewController?
     weak var newIrregularVC: NewIrregularTrackerViewController?
-    
-    private var collectionView: UICollectionView!
-    
-    private let emojis: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
-    
-    var selectedEmoji: String?
-    private var selectedIndexPath: IndexPath?
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupCollectionView()
-    }
-    
-    private func setupCollectionView() {
+
+    private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 2.5
         layout.sectionInset = UIEdgeInsets(top: 24, left: 6, bottom: 16, right: 6)
         
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(EmojiCollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
         collectionView.backgroundColor = .white
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
+
+    private let emojis: [String] = ["🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
+    
+    var selectedEmoji: String?
+    private var selectedIndexPath: IndexPath?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupCollectionView()
+    }
+
+    private func setupCollectionView() {
         view.addSubview(collectionView)
         
         NSLayoutConstraint.activate([
@@ -48,7 +51,7 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         ])
         collectionView.isScrollEnabled = false
     }
-    
+
     // MARK: - UICollectionViewDataSource
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -56,7 +59,9 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! EmojiCollectionViewCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as? EmojiCollectionViewCell else {
+            fatalError("Could not dequeue cell of type EmojiCollectionViewCell")
+        }
         let emoji = emojis[indexPath.item]
         cell.configure(with: emoji)
         return cell
@@ -66,7 +71,9 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
-            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
+            guard let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as? SectionHeaderView else {
+                fatalError("Could not dequeue header view")
+            }
             headerView.configure(with: "Emoji")
             return headerView
         }
@@ -95,12 +102,12 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         
         selectedIndexPath = indexPath
         selectedEmoji = emojis[indexPath.item]
-        print("Selected emoji: \(selectedEmoji!)")
+        print("Selected emoji: \(selectedEmoji ?? "")")
         newUsualVC?.updateCreateButtonState()
         newIrregularVC?.updateCreateButtonState()
         
         if let newCell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
-            newCell.updateAppearance(isSelected: true) 
+            newCell.updateAppearance(isSelected: true)
         }
     }
 }

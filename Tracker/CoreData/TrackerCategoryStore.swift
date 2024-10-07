@@ -11,7 +11,7 @@ import UIKit
 
 final class TrackerCategoryStore: NSObject {
     private let context: NSManagedObjectContext
-    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>!
+    private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
     private let trackerStore: TrackerStore
     
     var categories: [TrackerCategory] {
@@ -27,13 +27,18 @@ final class TrackerCategoryStore: NSObject {
     // MARK: - Initializers
     
     convenience override init() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("Не удалось привести delegate к AppDelegate")
+        }
+        let context = appDelegate.persistentContainer.viewContext
+        
         do {
             try self.init(context: context)
         } catch {
             fatalError("Не удалось инициализировать TrackerCategoryStore: \(error)")
         }
     }
+
     
     init(context: NSManagedObjectContext) throws {
         self.context = context
@@ -101,11 +106,18 @@ final class TrackerCategoryStore: NSObject {
     // MARK: - Private Methods
     
     private func fetchCategoriesFromCoreData() -> [TrackerCategory] {
-        guard
-            let objects = fetchedResultsController.fetchedObjects,
-            let categories = try? objects.map({ try self.category(from: $0) })
-        else { return [] }
-        return categories
+        guard let objects = fetchedResultsController?.fetchedObjects else {
+            print("FetchedResultsController is nil or has no objects")
+            return []
+        }
+        
+        do {
+            let categories = try objects.map { try self.category(from: $0) }
+            return categories
+        } catch {
+            print("Ошибка при маппинге категорий: \(error)")
+            return []
+        }
     }
     
     private func addNewCategoryToCoreData(_ category: TrackerCategory) throws {
@@ -212,15 +224,14 @@ final class TrackerCategoryStore: NSObject {
             throw TrackerStoreError.decodingErrorInvalidTitle
         }
         
+        let allTrackers = trackerStore.trackers
         let trackers = (categoryCoreData.tracker as? Set<TrackerCoreData>)?.compactMap { trackerCoreData in
-            return try? trackerStore.getTracker(from: trackerCoreData)
+            return allTrackers.first { $0.id == trackerCoreData.id }
         } ?? []
         
         return TrackerCategory(title: title, trackers: trackers)
     }
 }
-
-
 
 extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {

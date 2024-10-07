@@ -12,14 +12,28 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     weak var newUsualVC: NewUsualTrackerViewController?
     weak var newIrregularVC: NewIrregularTrackerViewController?
     
-    private var collectionView: UICollectionView!
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 2.5
+        layout.sectionInset = UIEdgeInsets(top: 24, left: 6, bottom: 0, right: 6)
+
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: "ColorCell")
+        collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
+        collectionView.backgroundColor = .white
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
+    }()
     
-    let colors: [UIColor] = AppColor.allCases.map { $0.color }
+    let colors: [UIColor] = AppColor.allCases.compactMap { $0.color }
     let colorNames: [String] = AppColor.allCases.map { $0.rawValue }
     
     var selectedColor: UIColor?
     var selectedColorName: String?
-    
     
     private var selectedIndexPath: IndexPath?
     
@@ -29,19 +43,6 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     }
     
     private func setupCollectionView() {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 2.5
-        layout.sectionInset = UIEdgeInsets(top: 24, left: 6, bottom: 0, right: 6)
-        
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: "ColorCell")
-        collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
-        collectionView.backgroundColor = .white
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         
         NSLayoutConstraint.activate([
@@ -53,7 +54,6 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.isScrollEnabled = false
     }
     
-    
     // MARK: - UICollectionViewDataSource
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -61,31 +61,35 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! ColorCollectionViewCell
-        let color = colors[indexPath.item]
-        cell.configure(with: color)
-        
-        
-        if indexPath == selectedIndexPath {
-            cell.layer.borderWidth = 2
-            cell.layer.borderColor = UIColor.black.cgColor
-        } else {
-            cell.layer.borderWidth = 0
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? ColorCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            
+            let color = colors[indexPath.item]
+            cell.configure(with: color)
+            
+            if indexPath == selectedIndexPath {
+                cell.layer.borderWidth = 2
+                cell.layer.borderColor = UIColor.black.cgColor
+            } else {
+                cell.layer.borderWidth = 0
+            }
+            
+            return cell
         }
-        
-        return cell
-    }
     
     // MARK: - SectionHeader
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        if kind == UICollectionView.elementKindSectionHeader {
-            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SectionHeaderView
-            headerView.configure(with: "Цвет")
-            return headerView
+            if kind == UICollectionView.elementKindSectionHeader {
+                guard let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as? SectionHeaderView else {
+                    return UICollectionReusableView()
+                }
+                headerView.configure(with: "Цвет")
+                return headerView
+            }
+            return UICollectionReusableView()
         }
-        return UICollectionReusableView()
-    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 18)
@@ -112,7 +116,11 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         selectedIndexPath = indexPath
         selectedColor = colors[indexPath.item]
         selectedColorName = colorNames[indexPath.item]
-        print("Selected color: \(selectedColor!), name: \(selectedColorName!)")
+        
+        if let selectedColor = selectedColor, let selectedColorName = selectedColorName {
+            print("Selected color: \(selectedColor), name: \(selectedColorName)")
+        }
+        
         newUsualVC?.updateCreateButtonState()
         newIrregularVC?.updateCreateButtonState()
         
@@ -122,3 +130,4 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         }
     }
 }
+

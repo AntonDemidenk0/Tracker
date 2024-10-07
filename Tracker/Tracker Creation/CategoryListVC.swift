@@ -143,7 +143,9 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as! CustomTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as? CustomTableViewCell else {
+            return UITableViewCell()
+        }
         let category = categories[indexPath.row]
         
         cell.textLabel?.text = category
