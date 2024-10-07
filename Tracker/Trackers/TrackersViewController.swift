@@ -323,11 +323,11 @@ extension TrackersViewController {
             let trackerRecord = TrackerRecord(trackerId: tracker.id, date: date)
             return completedTrackers.contains(trackerRecord)
         }
-        
+
         if let completionRecord = completedTrackers.first(where: { $0.trackerId == tracker.id }) {
-            return date < Calendar.current.date(byAdding: .day, value: 1, to: completionRecord.date) ?? Date()
+            return Calendar.current.isDate(date, inSameDayAs: completionRecord.date)
         }
-        
+
         return false
     }
     
@@ -368,6 +368,7 @@ extension TrackersViewController {
     private func shouldDisplayTracker(_ tracker: Tracker, on date: Date) -> Bool {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
+
         if let schedule = tracker.schedule {
             let currentWeekDay = calendar.component(.weekday, from: date)
             guard let selectedWeekDay = WeekDay(rawValue: currentWeekDay == 1 ? 7 : currentWeekDay - 1) else {
@@ -375,11 +376,12 @@ extension TrackersViewController {
             }
             return schedule.contains(selectedWeekDay)
         } else if let completionRecord = completedTrackers.first(where: { $0.trackerId == tracker.id }) {
-            let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: completionRecord.date) ?? Date()
-            return date >= completionRecord.date && date < nextDay
+            return Calendar.current.isDate(date, inSameDayAs: completionRecord.date)
         }
+        
         return true
     }
+
 }
 
 // MARK: - Data Persistence
