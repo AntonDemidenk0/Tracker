@@ -26,7 +26,7 @@ class CustomTableViewCell: UITableViewCell {
     }()
     
     var separatorTrailingConstraint: NSLayoutConstraint?
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -44,7 +44,7 @@ class CustomTableViewCell: UITableViewCell {
             titleLabel.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8),
             
             separator.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            separatorTrailingConstraint!,
+            separatorTrailingConstraint ?? separator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             separator.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             separator.heightAnchor.constraint(equalToConstant: 0.5)
         ])
@@ -52,6 +52,7 @@ class CustomTableViewCell: UITableViewCell {
         backgroundColor = UIColor(named: "TableViewColor")
         selectionStyle = .none
     }
+
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

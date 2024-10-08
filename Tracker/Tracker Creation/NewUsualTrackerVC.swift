@@ -10,7 +10,7 @@ import UIKit
 final class NewUsualTrackerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
     
     // MARK: - Properties
-    
+    private let trackerStore = TrackerStore()
     private var selectedCategory: String?
     private var selectedDaysString: String = "" {
         didSet {
@@ -20,20 +20,85 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     var trackersViewController: TrackersViewController?
     var selectedColor: UIColor?
     var selectedEmoji: String?
-    private var scrollView: UIScrollView!
-    private var contentView: UIView!
-    private var tableView: UITableView!
-    private var colorVC: ColorViewController!
-    private var emojiVC: EmojiViewController!
-    private var trackerNameTextField: PaddedTextField!
     private var trackerName: String?
-    private var limitLabel: UILabel!
-    
-    private var cancelButton: UIButton!
-    private var createButton: UIButton!
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    private lazy var contentView: UIView = {
+        let contentView = UIView()
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        return contentView
+    }()
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.layer.cornerRadius = 16
+        tableView.separatorStyle = .none
+        tableView.isScrollEnabled = false
+        tableView.backgroundColor = UIColor.clear
+        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "categoryCell")
+        return tableView
+    }()
+    private lazy var colorVC: ColorViewController = {
+        let colorVC = ColorViewController()
+        colorVC.newUsualVC = self
+        return colorVC
+    }()
+    private lazy var emojiVC: EmojiViewController = {
+        let emojiVC = EmojiViewController()
+        emojiVC.newUsualVC = self
+        return emojiVC
+    }()
+    private lazy var trackerNameTextField: PaddedTextField = {
+        let textField = PaddedTextField()
+        textField.font = UIFont.systemFont(ofSize: 17)
+        textField.placeholder = "Введите название трекера"
+        textField.layer.cornerRadius = 16
+        textField.backgroundColor = UIColor(named: "TableViewColor")
+        textField.clearButtonMode = .whileEditing
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    private lazy var limitLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение 38 символов"
+        label.textColor = UIColor(named: "CancelButtonColor")
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 17)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.alpha = 0
+        label.isHidden = true
+        return label
+    }()
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Отменить", for: .normal)
+        button.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
+        button.layer.borderWidth = 1
+        button.layer.cornerRadius = 16
+        button.backgroundColor = .clear
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    private lazy var createButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Создать", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.backgroundColor = UIColor(named: "YGrayColor")
+        button.layer.cornerRadius = 16
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+        return button
+    }()
     
     private var completionHandler: ((Tracker, String) -> Void)?
-    
+
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
@@ -41,9 +106,8 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
         self.closeNewTrackerVCHandler = handler
     }
-    
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Новая привычка"
@@ -61,30 +125,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         view.addGestureRecognizer(tapGesture)
     }
-    
+
     // MARK: - Setup UI
-    
+
     private func setupButtons() {
-        cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Отменить", for: .normal)
-        cancelButton.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
-        cancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        cancelButton.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
-        cancelButton.layer.borderWidth = 1
-        cancelButton.layer.cornerRadius = 16
-        cancelButton.backgroundColor = .clear
-        cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        
-        createButton = UIButton(type: .system)
-        createButton.setTitle("Создать", for: .normal)
-        createButton.setTitleColor(.white, for: .normal)
-        createButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        createButton.backgroundColor = UIColor(named: "YGrayColor")
-        createButton.layer.cornerRadius = 16
-        createButton.translatesAutoresizingMaskIntoConstraints = false
-        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
-        
         contentView.addSubview(cancelButton)
         contentView.addSubview(createButton)
         
@@ -102,16 +146,9 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         ])
         updateCreateButtonState()
     }
-    
+
     private func setupTextField() {
-        trackerNameTextField = PaddedTextField()
-        trackerNameTextField.font = UIFont.systemFont(ofSize: 17)
-        trackerNameTextField.placeholder = "Введите название трекера"
-        trackerNameTextField.layer.cornerRadius = 16
-        trackerNameTextField.backgroundColor = UIColor(named: "TableViewColor")
-        trackerNameTextField.translatesAutoresizingMaskIntoConstraints = false
         trackerNameTextField.delegate = self
-        trackerNameTextField.clearButtonMode = .whileEditing
         contentView.addSubview(trackerNameTextField)
         
         NSLayoutConstraint.activate([
@@ -122,17 +159,8 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         ])
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
     }
-    
+
     private func setupLimitLabel() {
-        limitLabel = UILabel()
-        limitLabel.text = "Ограничение 38 символов"
-        limitLabel.textColor = UIColor(named: "CancelButtonColor")
-        limitLabel.textAlignment = .center
-        limitLabel.font = UIFont.systemFont(ofSize: 17)
-        limitLabel.translatesAutoresizingMaskIntoConstraints = false
-        limitLabel.alpha = 0
-        limitLabel.isHidden = true
-        
         contentView.addSubview(limitLabel)
         
         NSLayoutConstraint.activate([
@@ -141,14 +169,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             limitLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
         ])
     }
-    
+
     private func setupScrollView() {
-        scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
         
-        contentView = UIView()
-        contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         
         NSLayoutConstraint.activate([
@@ -166,18 +190,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             contentView.heightAnchor.constraint(equalToConstant: 850)
         ])
     }
-    
+
     private func setupTableView() {
-        tableView = UITableView(frame: .zero, style: .plain)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.layer.cornerRadius = 16
-        tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
-        tableView.backgroundColor = UIColor.clear
-        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "categoryCell")
-        
         contentView.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -187,16 +203,12 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             tableView.heightAnchor.constraint(equalToConstant: 150)
         ])
     }
-    
+
     private func setupChildViewControllers() {
-        colorVC = ColorViewController()
-        colorVC.newUsualVC = self
         addChild(colorVC)
         contentView.addSubview(colorVC.view)
         colorVC.didMove(toParent: self)
         
-        emojiVC = EmojiViewController()
-        emojiVC.newUsualVC = self
         addChild(emojiVC)
         contentView.addSubview(emojiVC.view)
         emojiVC.didMove(toParent: self)
@@ -434,43 +446,33 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             return
         }
         
-        
         let scheduleArray: [String]
         if selectedDaysString == "Каждый день" || selectedDaysString.isEmpty {
-            
             scheduleArray = WeekDay.allCases.map { $0.shortName }
         } else {
             scheduleArray = selectedDaysString.components(separatedBy: ", ")
         }
         
-        print("Schedule Array: \(scheduleArray)")
-        
         let scheduleSet: Set<WeekDay> = Set(scheduleArray.compactMap { WeekDay(shortName: $0.trimmingCharacters(in: .whitespaces)) })
-        print("Schedule Set: \(scheduleSet)")
-        
-        
-        let trackerSchedule = TrackerSchedule(trackerId: UUID().uuidString, days: scheduleSet)
-        
         
         let newTracker = Tracker(
             id: UUID(),
             name: trackerName,
             color: selectedColorName,
             emoji: selectedEmoji,
-            schedule: trackerSchedule
+            schedule: scheduleSet
         )
         
-        print("New Tracker: \(newTracker)")
+        guard let categoryTitle = selectedCategory else {
+            print("Категория не выбрана")
+            return
+        }
         
-        if let handler = completionHandler, let categoryTitle = selectedCategory {
-            print("Completion Handler вызывается")
-            handler(newTracker, categoryTitle)
-            dismiss(animated: true, completion: nil)
-        } else {
-            print("Completion Handler не установлен или категория не выбрана")
-        }
-        if let handler = closeNewTrackerVCHandler {
-            handler()
-        }
+        completionHandler?(newTracker, categoryTitle)
+        print("Completion handler called with tracker: \(newTracker) and category: \(categoryTitle)")
+        
+        dismiss(animated: true, completion: nil)
+        
+        closeNewTrackerVCHandler?()
     }
 }
