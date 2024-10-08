@@ -15,12 +15,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         let mainTabBarController = MainTabBarController()
-        window.rootViewController = mainTabBarController
+        let onboardingViewController = OnboardingViewController()
+        let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
+        if hasSeenOnboarding {
+            window.rootViewController = mainTabBarController
+        } else {
+            window.rootViewController = onboardingViewController
+        }
         window.makeKeyAndVisible()
         self.window = window
     }
-    
-    
     
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

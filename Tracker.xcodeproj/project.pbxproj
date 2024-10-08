@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F52226E2CB40B3500305569 /* OnboardingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F52226D2CB40B2800305569 /* OnboardingVC.swift */; };
 		1F9FB35E2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1F9FB35C2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld */; };
 		1F9FB3602CA49D72001ACF03 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F9FB35F2CA49D72001ACF03 /* Colors.swift */; };
 		1F9FB3622CA558F7001ACF03 /* PaddedTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F9FB3612CA558F7001ACF03 /* PaddedTextField.swift */; };
@@ -41,6 +42,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1F52226D2CB40B2800305569 /* OnboardingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingVC.swift; sourceTree = "<group>"; };
 		1F9FB35D2CA2F1A2001ACF03 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		1F9FB35F2CA49D72001ACF03 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		1F9FB3612CA558F7001ACF03 /* PaddedTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedTextField.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				1FE4A5242C89B153005B7A7D /* Info.plist */,
 				1FE4A5162C89B150005B7A7D /* AppDelegate.swift */,
 				1FE4A5182C89B150005B7A7D /* SceneDelegate.swift */,
+				1F52226D2CB40B2800305569 /* OnboardingVC.swift */,
 				1FC47BBC2C9C925300DFABE4 /* TabBarController.swift */,
 				1FC47BC22CA19FA300DFABE4 /* Trackers */,
 				1FC47BC72CA1A06A00DFABE4 /* Tracker Creation */,
@@ -267,6 +270,7 @@
 				1FC47BB42C94300200DFABE4 /* CategoryListVC.swift in Sources */,
 				1FC47BB62C943D0500DFABE4 /* NewCategoryVC.swift in Sources */,
 				1F9FB35E2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld in Sources */,
+				1F52226E2CB40B3500305569 /* OnboardingVC.swift in Sources */,
 				1FC47BC92CA1A1D000DFABE4 /* TrackerHeaderVC.swift in Sources */,
 				1F9FB36F2CA6CFA1001ACF03 /* TrackerRecordStore.swift in Sources */,
 				1FA5E0092C90A45E007A729D /* ColorCollectionViewCell.swift in Sources */,
