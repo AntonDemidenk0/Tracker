@@ -14,7 +14,17 @@ protocol NewCategoryViewControllerDelegate: AnyObject {
 
 final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
-    weak var delegate: NewCategoryViewControllerDelegate?
+    var viewModel: CategoryListViewModel
+    
+    init(viewModel: CategoryListViewModel) {
+            self.viewModel = viewModel
+            super.init(nibName: nil, bundle: nil)
+        }
+
+        required init?(coder aDecoder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    
     
     private lazy var categoryNameTextField: PaddedTextField = {
         let textField = PaddedTextField()
@@ -153,7 +163,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     @objc private func addCategory(_ sender: UIButton) {
         if let categoryName = categoryNameTextField.text, !categoryName.isEmpty {
-            delegate?.didAddCategory(categoryName)
+            viewModel.didAddCategory(categoryName)
             dismiss(animated: true, completion: nil)
         }
     }

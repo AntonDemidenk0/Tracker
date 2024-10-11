@@ -10,6 +10,7 @@ import CoreData
 import UIKit
 
 final class TrackerCategoryStore: NSObject {
+    static let shared = TrackerCategoryStore()
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
     private let trackerStore: TrackerStore
@@ -24,29 +25,25 @@ final class TrackerCategoryStore: NSObject {
         }
     }
     
+    var onCategoriesUpdated: (() -> Void)?
+
     // MARK: - Initializers
     
-    convenience override init() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            fatalError("Не удалось привести delegate к AppDelegate")
+    private override init() {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                fatalError("Не удалось привести delegate к AppDelegate")
+            }
+            self.context = appDelegate.persistentContainer.viewContext
+            
+            do {
+                self.trackerStore = try TrackerStore(context: context)
+            } catch {
+                fatalError("Не удалось инициализировать TrackerStore: \(error)")
+            }
+            
+            super.init()
+            setupFetchedResultsController()
         }
-        let context = appDelegate.persistentContainer.viewContext
-        
-        do {
-            try self.init(context: context)
-        } catch {
-            fatalError("Не удалось инициализировать TrackerCategoryStore: \(error)")
-        }
-    }
-
-    
-    init(context: NSManagedObjectContext) throws {
-        self.context = context
-        self.trackerStore = try TrackerStore(context: context)
-        super.init()
-        
-        setupFetchedResultsController()
-    }
     
     private func setupFetchedResultsController() {
         let fetchRequest = TrackerCategoryCoreData.fetchRequest()
@@ -58,10 +55,12 @@ final class TrackerCategoryStore: NSObject {
             sectionNameKeyPath: nil,
             cacheName: nil
         )
-        self.fetchedResultsController = controller
+        
+        fetchedResultsController = controller
+        fetchedResultsController?.delegate = self
         
         do {
-            try controller.performFetch()
+            try fetchedResultsController?.performFetch()
         } catch {
             print("Ошибка при выполнении fetch: \(error)")
         }
@@ -70,21 +69,15 @@ final class TrackerCategoryStore: NSObject {
     // MARK: - Public Methods
     
     func fetchCategories() -> [TrackerCategory] {
-        do {
-            try setupFetchedResultsController()
-            return categories
-        } catch {
-            print("Ошибка при загрузке категорий: \(error)")
-            return []
-        }
+        return fetchCategoriesFromCoreData()
     }
     
     func addNewCategory(_ category: TrackerCategory) throws {
-        try addNewCategoryToCoreData(category)
+            try addNewCategoryToCoreData(category)
     }
     
     func deleteCategory(withTitle title: String) throws {
-        try deleteCategoryFromCoreData(withTitle: title)
+            try deleteCategoryFromCoreData(withTitle: title)
     }
     
     func saveCategories() {
@@ -101,6 +94,10 @@ final class TrackerCategoryStore: NSObject {
     
     func updateSelectedCategory(with title: String?) {
         updateSelectedCategoryInCoreData(with: title)
+    }
+    
+    func notifyUpdates() {
+        onCategoriesUpdated?()
     }
     
     // MARK: - Private Methods
@@ -121,6 +118,15 @@ final class TrackerCategoryStore: NSObject {
     }
     
     private func addNewCategoryToCoreData(_ category: TrackerCategory) throws {
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "title == %@", category.title)
+        
+        let existingCategories = try context.fetch(fetchRequest)
+        guard existingCategories.isEmpty else {
+            print("Категория с именем \(category.title) уже существует.")
+            return
+        }
+        
         let categoryCoreData = TrackerCategoryCoreData(context: context)
         categoryCoreData.title = category.title
         
@@ -137,8 +143,6 @@ final class TrackerCategoryStore: NSObject {
         }
         
         categoryCoreData.tracker = NSSet(array: trackerCoreDataList)
-        
-        try context.save()
     }
     
     private func deleteCategoryFromCoreData(withTitle title: String) throws {
@@ -153,10 +157,14 @@ final class TrackerCategoryStore: NSObject {
     }
     
     private func saveCategoriesToCoreData() {
-        do {
-            try context.save()
-        } catch {
-            print("Ошибка при сохранении категорий: \(error)")
+        context.perform {
+            if self.context.hasChanges {
+                do {
+                    try self.context.save()
+                } catch {
+                    print("Ошибка при сохранении категорий: \(error)")
+                }
+            }
         }
     }
     
@@ -233,13 +241,17 @@ final class TrackerCategoryStore: NSObject {
     }
 }
 
+// MARK: - NSFetchedResultsControllerDelegate
+
 extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
+    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+            notifyUpdates()
     }
-    
+
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,
@@ -250,18 +262,15 @@ extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
         switch type {
         case .insert:
             guard let newIndexPath = newIndexPath else { return }
-            print("Inserted category at \(newIndexPath)")
+                print("Inserted category at \(newIndexPath)")
         case .delete:
             guard let indexPath = indexPath else { return }
-            print("Deleted category at \(indexPath)")
+                print("Deleted category at \(indexPath)")
         case .update:
             guard let indexPath = indexPath else { return }
             print("Updated category at \(indexPath)")
-        case .move:
-            guard let oldIndexPath = indexPath, let newIndexPath = newIndexPath else { return }
-            print("Moved category from \(oldIndexPath) to \(newIndexPath)")
-        @unknown default:
-            fatalError("Unknown change type")
+        default:
+            break
         }
     }
 }

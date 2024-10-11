@@ -11,7 +11,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
     private let trackerStore = TrackerStore()
-    private let trackerCategoryStore = TrackerCategoryStore()
+    private let trackerCategoryStore = TrackerCategoryStore.shared
     private let trackerRecordStore = TrackerRecordStore()
     private var trackers: [Tracker] = []
     private var filteredCategories: [TrackerCategory] = []

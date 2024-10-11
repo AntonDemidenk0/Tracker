@@ -139,7 +139,3 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
         return previousIndex < 0 ? pages.last : pages[previousIndex]
     }
 }
-@available(iOS 17, *)
-#Preview {
-    OnboardingViewController()
-}
