@@ -12,21 +12,10 @@ protocol CategorySelectionDelegate: AnyObject {
     func didSelectCategory(_ category: String?)
 }
 
-final class CategoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NewCategoryViewControllerDelegate {
-    private let trackerCategoryStore = TrackerCategoryStore()
+final class CategoryListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    private let viewModel = CategoryListViewModel()
     weak var delegate: CategorySelectionDelegate?
-    
-    private var categories: [String] = [] {
-        didSet {
-            trackerCategoryStore.saveCategories()
-        }
-    }
-    
-    var selectedCategory: String? {
-        didSet {
-            trackerCategoryStore.updateSelectedCategory(with: selectedCategory)
-        }
-    }
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
@@ -44,7 +33,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     private lazy var stubImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MainScreenStub"))
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.isHidden = false
+        imageView.isHidden = true
         return imageView
     }()
     
@@ -76,17 +65,14 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         navigationItem.title = "Категория"
         view.backgroundColor = .white
         
-        if let savedCategories = try? trackerCategoryStore.fetchCategories() {
-            categories = savedCategories.map { $0.title }
-        }
-        
-        if let savedSelectedCategory = try? trackerCategoryStore.loadSelectedCategory() {
-            selectedCategory = savedSelectedCategory.title
+        viewModel.onCategoriesUpdated = { [weak self] in
+            self?.updateUI()
         }
         
         view.addSubview(stubImageView)
         view.addSubview(stubLabel)
         view.addSubview(newCategoryButton)
+        viewModel.loadCategories()
         setupLayout()
         setupTableView()
         updateUI()
@@ -97,7 +83,12 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        let categoryToSend = selectedCategory ?? nil
+
+        if !viewModel.isSelectedCategoryValid() {
+            viewModel.selectedCategory = nil
+        }
+        
+        let categoryToSend = viewModel.selectedCategory
         delegate?.didSelectCategory(categoryToSend)
     }
     
@@ -124,14 +115,20 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
             tableView.bottomAnchor.constraint(equalTo: newCategoryButton.topAnchor, constant: -16)
         ])
     }
+}
+
+// MARK: - UI Updates
+extension CategoryListViewController {
     
-    private func updateUI() {
-        let hasCategories = !categories.isEmpty
+    func updateUI() {
+        let hasCategories = !viewModel.categories.isEmpty
         stubImageView.isHidden = hasCategories
         stubLabel.isHidden = hasCategories
         tableView.isHidden = !hasCategories
         
-        tableView.reloadData()
+        if hasCategories {
+            tableView.reloadData()
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -139,35 +136,40 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        return viewModel.categories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard viewModel.categories.indices.contains(indexPath.row) else {
+            return UITableViewCell()
+        }
+        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as? CustomTableViewCell else {
             return UITableViewCell()
         }
-        let category = categories[indexPath.row]
         
-        cell.textLabel?.text = category
+        let category = viewModel.categories[indexPath.row]
+        
+        cell.textLabel?.text = category.title
         cell.accessoryType = .none
         cell.selectionStyle = .none
         cell.backgroundColor = UIColor(named: "TableViewColor")
         
-        if selectedCategory == category {
+        if viewModel.selectedCategory == category.title {
             cell.accessoryType = .checkmark
             cell.separatorTrailingConstraint?.constant = 28
         } else {
             cell.separatorTrailingConstraint?.constant = -16
         }
         
-        if categories.count > 1 {
-            let isLastRow = indexPath.row == categories.count - 1
+        if viewModel.categories.count > 1 {
+            let isLastRow = indexPath.row == viewModel.categories.count - 1
             cell.setSeparatorHidden(isLastRow)
         } else {
             cell.setSeparatorHidden(true)
         }
         
-        if categories.count == 1 {
+        if viewModel.categories.count == 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             cell.layer.masksToBounds = true
@@ -175,7 +177,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
             cell.layer.masksToBounds = true
-        } else if indexPath.row == categories.count - 1 {
+        } else if indexPath.row == viewModel.categories.count - 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             cell.layer.masksToBounds = true
@@ -187,79 +189,46 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedCategory = categories[indexPath.row]
+        let selectedCategory = viewModel.categories[indexPath.row]
         
-        if self.selectedCategory == selectedCategory {
-            self.selectedCategory = nil
+        if viewModel.selectedCategory == selectedCategory.title {
+            viewModel.selectedCategory = nil
+            viewModel.updateSelectedCategory(with: nil)
         } else {
-            self.selectedCategory = selectedCategory
+            viewModel.selectedCategory = selectedCategory.title
+            viewModel.updateSelectedCategory(with: selectedCategory.title)
         }
         
         tableView.reloadData()
         
-        if let selectedCategory = self.selectedCategory {
+        if let selectedCategory =  viewModel.selectedCategory {
             delegate?.didSelectCategory(selectedCategory)
             dismiss(animated: true, completion: nil)
         }
     }
-    
-    func didAddCategory(_ category: String) {
-        let newCategory = TrackerCategory(title: category, trackers: [])
-        
-        do {
-            try trackerCategoryStore.addNewCategory(newCategory)
-            categories.append(category)
-            tableView.reloadData()
-            updateUI()
-        } catch {
-            print("Ошибка при добавлении категории: \(error)")
-        }
-    }
+}
+
+// MARK: - Business Logic
+extension CategoryListViewController {
     
     @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             let touchPoint = gestureRecognizer.location(in: tableView)
             if let indexPath = tableView.indexPathForRow(at: touchPoint) {
-                let categoryToDelete = categories[indexPath.row]
+                let categoryToDelete =  viewModel.categories[indexPath.row]
                 
-                let alert = UIAlertController(title: "Удалить категорию?", message: "Вы уверены, что хотите удалить категорию '\(categoryToDelete)'?", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Удалить категорию?", message: "Вы уверены, что хотите удалить категорию '\(categoryToDelete.title)'?", preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
                 alert.addAction(UIAlertAction(title: "Удалить", style: .destructive, handler: { [weak self] _ in
-                    self?.deleteCategory(at: indexPath)
+                    self?.viewModel.deleteCategory(at: indexPath)
                 }))
-                
                 present(alert, animated: true, completion: nil)
             }
         }
     }
     
-    private func deleteCategory(at indexPath: IndexPath) {
-        let categoryToDelete = categories[indexPath.row]
-        
-        do {
-            try trackerCategoryStore.deleteCategory(withTitle: categoryToDelete)
-        } catch {
-            print("Ошибка при удалении категории: \(error)")
-            return
-        }
-        
-        
-        categories.remove(at: indexPath.row)
-        
-        if selectedCategory == categoryToDelete {
-            selectedCategory = nil
-        }
-        
-        tableView.performBatchUpdates({
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        }, completion: { [weak self] _ in
-            self?.updateUI()
-        })
-    }
-    
-    @objc private func newCategory(_ sender: UIButton) {
-        let newCategoryVC = NewCategoryViewController()
-        newCategoryVC.delegate = self
+    @objc private func newCategory() {
+        let newCategoryVC = NewCategoryViewController(viewModel: viewModel)
         let navController = UINavigationController(rootViewController: newCategoryVC)
         present(navController, animated: true, completion: nil)
     }
