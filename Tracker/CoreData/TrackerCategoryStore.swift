@@ -21,7 +21,7 @@ final class TrackerCategoryStore: NSObject {
     
     var selectedCategory: TrackerCategory? {
         didSet {
-            saveSelectedCategory()
+            saveSelectedCategoryToCoreData()
         }
     }
     
@@ -82,10 +82,6 @@ final class TrackerCategoryStore: NSObject {
     
     func saveCategories() {
         saveCategoriesToCoreData()
-    }
-    
-    func saveSelectedCategory() {
-        saveSelectedCategoryToCoreData()
     }
     
     func loadSelectedCategory() -> TrackerCategory? {

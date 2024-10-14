@@ -40,6 +40,7 @@
 		1FE4A5202C89B153005B7A7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FE4A51F2C89B153005B7A7D /* Assets.xcassets */; };
 		1FE4A5232C89B153005B7A7D /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 1FE4A5222C89B153005B7A7D /* Base */; };
 		1FE8EB272CB919DF004E281F /* CategoryListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE8EB262CB919D7004E281F /* CategoryListViewModel.swift */; };
+		1FE8EB2D2CBD16BA004E281F /* OnboardingPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE8EB2C2CBD16AF004E281F /* OnboardingPageViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -78,6 +79,7 @@
 		1FE4A5222C89B153005B7A7D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1FE4A5242C89B153005B7A7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1FE8EB262CB919D7004E281F /* CategoryListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryListViewModel.swift; sourceTree = "<group>"; };
+		1FE8EB2C2CBD16AF004E281F /* OnboardingPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,6 +185,7 @@
 				1FE4A5162C89B150005B7A7D /* AppDelegate.swift */,
 				1FE4A5182C89B150005B7A7D /* SceneDelegate.swift */,
 				1F52226D2CB40B2800305569 /* OnboardingVC.swift */,
+				1FE8EB2C2CBD16AF004E281F /* OnboardingPageViewController.swift */,
 				1FC47BBC2C9C925300DFABE4 /* TabBarController.swift */,
 				1FC47BC22CA19FA300DFABE4 /* Trackers */,
 				1FC47BC72CA1A06A00DFABE4 /* Tracker Creation */,
@@ -286,6 +289,7 @@
 				1F9FB36F2CA6CFA1001ACF03 /* TrackerRecordStore.swift in Sources */,
 				1FA5E0092C90A45E007A729D /* ColorCollectionViewCell.swift in Sources */,
 				1FA5E00D2C90D0BF007A729D /* ColorVC.swift in Sources */,
+				1FE8EB2D2CBD16BA004E281F /* OnboardingPageViewController.swift in Sources */,
 				1FE8EB272CB919DF004E281F /* CategoryListViewModel.swift in Sources */,
 				1FC47BBF2C9C92A100DFABE4 /* StatisticsViewController.swift in Sources */,
 				1F9FB36B2CA6CF86001ACF03 /* TrackerStore.swift in Sources */,

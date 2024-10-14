@@ -66,8 +66,8 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         view.backgroundColor = .white
         
         viewModel.onCategoriesUpdated = { [weak self] in
-                    self?.updateUI()
-                }
+            self?.updateUI()
+        }
         
         view.addSubview(stubImageView)
         view.addSubview(stubLabel)
@@ -83,13 +83,12 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        if let selectedCategoryTitle = viewModel.selectedCategory,
-           !viewModel.categories.contains(where: { $0.title == selectedCategoryTitle }) {
+
+        if !viewModel.isSelectedCategoryValid() {
             viewModel.selectedCategory = nil
         }
         
-        let categoryToSend = viewModel.selectedCategory ?? nil
+        let categoryToSend = viewModel.selectedCategory
         delegate?.didSelectCategory(categoryToSend)
     }
     
@@ -126,7 +125,7 @@ extension CategoryListViewController {
         stubImageView.isHidden = hasCategories
         stubLabel.isHidden = hasCategories
         tableView.isHidden = !hasCategories
-
+        
         if hasCategories {
             tableView.reloadData()
         }
@@ -188,10 +187,10 @@ extension CategoryListViewController {
         
         return cell
     }
-
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedCategory = viewModel.categories[indexPath.row]
-
+        
         if viewModel.selectedCategory == selectedCategory.title {
             viewModel.selectedCategory = nil
             viewModel.updateSelectedCategory(with: nil)
@@ -199,9 +198,9 @@ extension CategoryListViewController {
             viewModel.selectedCategory = selectedCategory.title
             viewModel.updateSelectedCategory(with: selectedCategory.title)
         }
-
+        
         tableView.reloadData()
-
+        
         if let selectedCategory =  viewModel.selectedCategory {
             delegate?.didSelectCategory(selectedCategory)
             dismiss(animated: true, completion: nil)

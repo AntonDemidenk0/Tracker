@@ -49,6 +49,13 @@ final class CategoryListViewModel {
         }
     }
     
+    func isSelectedCategoryValid() -> Bool {
+            if let selectedCategory = selectedCategory {
+                return categories.contains { $0.title == selectedCategory }
+            }
+            return false
+        }
+    
     func updateSelectedCategory(with title: String?) {
         trackerCategoryStore.updateSelectedCategory(with: title)
     }
