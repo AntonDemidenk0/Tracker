@@ -54,7 +54,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     private lazy var trackerNameTextField: PaddedTextField = {
         let textField = PaddedTextField()
         textField.font = UIFont.systemFont(ofSize: 17)
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = "trackerNameTextFieldPlaceholder.title".localized()
         textField.layer.cornerRadius = 16
         textField.backgroundColor = UIColor(named: "TableViewColor")
         textField.clearButtonMode = .whileEditing
@@ -63,7 +63,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     }()
     private lazy var limitLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "limitLabelText".localized()
         label.textColor = UIColor(named: "CancelButtonColor")
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 17)
@@ -74,7 +74,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     }()
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle("cancel".localized(), for: .normal)
         button.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
@@ -87,7 +87,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     }()
     private lazy var createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("create".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.backgroundColor = UIColor(named: "YGrayColor")
@@ -110,7 +110,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Новая привычка"
+        navigationItem.title = "newRegularTrackerNavItem.title".localized()
         view.backgroundColor = .white
         
         setupScrollView()
@@ -258,7 +258,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         cell.setAccessoryType(.disclosureIndicator)
         
         if indexPath.row == 0 {
-            let mainText = "Категория"
+            let mainText = "category".localized()
             
             if let selectedCategory = selectedCategory {
                 let combinedText = "\(mainText)\n\(selectedCategory)"
@@ -277,7 +277,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             cell.setSeparatorHidden(false)
         } else if indexPath.row == 1 {
             
-            let mainText = "Расписание"
+            let mainText = "schedule".localized()
             if !selectedDaysString.isEmpty {
                 let combinedText = "\(mainText)\n\(selectedDaysString)"
                 let attributedText = NSMutableAttributedString(string: combinedText)
@@ -447,7 +447,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         }
         
         let scheduleArray: [String]
-        if selectedDaysString == "Каждый день" || selectedDaysString.isEmpty {
+        if selectedDaysString == "everyDay".localized() || selectedDaysString.isEmpty {
             scheduleArray = WeekDay.allCases.map { $0.shortName }
         } else {
             scheduleArray = selectedDaysString.components(separatedBy: ", ")

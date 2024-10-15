@@ -16,19 +16,11 @@ extension Calendar {
 
 extension Int {
     func formatDays() -> String {
-        let absCount = abs(self) % 100
-        let lastDigit = absCount % 10
-        
-        if (11...14).contains(absCount) {
-            return "\(self) дней"
-        }
-        switch lastDigit {
-        case 1:
-            return "\(self) день"
-        case 2, 3, 4:
-            return "\(self) дня"
-        default:
-            return "\(self) дней"
-        }
+        return String.localizedStringWithFormat(NSLocalizedString("days.count", comment: ""), self)
+    }
+}
+extension String {
+    func localized() -> String {
+        return NSLocalizedString(self, comment: "")
     }
 }

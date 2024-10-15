@@ -40,7 +40,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     private lazy var stubLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 2
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = "categoryListStubLabel.text".localized()
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = UIColor(named: "YBlackColor")
         label.textAlignment = .center
@@ -50,7 +50,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     private lazy var newCategoryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Добавить категорию", for: .normal)
+        button.setTitle("addCategory".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
@@ -62,7 +62,7 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Категория"
+        navigationItem.title = "category".localized()
         view.backgroundColor = .white
         
         viewModel.onCategoriesUpdated = { [weak self] in
@@ -217,9 +217,9 @@ extension CategoryListViewController {
             if let indexPath = tableView.indexPathForRow(at: touchPoint) {
                 let categoryToDelete =  viewModel.categories[indexPath.row]
                 
-                let alert = UIAlertController(title: "Удалить категорию?", message: "Вы уверены, что хотите удалить категорию '\(categoryToDelete.title)'?", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-                alert.addAction(UIAlertAction(title: "Удалить", style: .destructive, handler: { [weak self] _ in
+                let alert = UIAlertController(title: "categoryDeleteAlert.title".localized(), message: "categoryDeleteAlert.text".localized(), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "cancel".localized(), style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "delete".localized(), style: .destructive, handler: { [weak self] _ in
                     self?.viewModel.deleteCategory(at: indexPath)
                 }))
                 present(alert, animated: true, completion: nil)

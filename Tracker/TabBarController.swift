@@ -15,8 +15,8 @@ final class MainTabBarController: UITabBarController {
         let trackersVC = TrackersViewController()
         let statisticsVC = StatisticsViewController()
 
-        trackersVC.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(named: "TrackerIcon"), tag: 0)
-        statisticsVC.tabBarItem = UITabBarItem(title: "Статистика", image: UIImage(named: "StatisticsIcon"), tag: 1)
+        trackersVC.tabBarItem = UITabBarItem(title: "trackers".localized(), image: UIImage(named: "TrackerIcon"), tag: 0)
+        statisticsVC.tabBarItem = UITabBarItem(title: "statistics".localized(), image: UIImage(named: "StatisticsIcon"), tag: 1)
 
         let trackersNavController = UINavigationController(rootViewController: trackersVC)
         let statisticsNavController = UINavigationController(rootViewController: statisticsVC)

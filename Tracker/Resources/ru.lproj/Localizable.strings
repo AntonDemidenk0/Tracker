@@ -1,0 +1,55 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Anton Demidenko on 14.10.24..
+  
+*/
+
+
+"onboardingLabelText1" = "Отслеживайте только\nто, что хотите";
+"onboardingLabelText2" = "Даже если это\nне литры воды и йога";
+"onboardingButton.title" = "Вот это технологии!";
+"trackers" = "Трекеры";
+"statistics" = "Статистика";
+"search" = "Поиск";
+"emptyState.title" = "Что будем отслеживать?";
+"newTrackerViewController.title" = "";
+"newTrackerNavItem.title" = "Создание трекера";
+"habitButton.title" = "Привычка";
+"irregularEventButton.title" = "Нерегулярное событие";
+"trackerNameTextFieldPlaceholder.title" = "Введите название трекера";
+"limitLabelText" = "Ограничение 38 символов";
+"newRegularTrackerNavItem.title" = "Новая привычка";
+"newIrregularTrackerNavItem.title" = "Новое нерегулярное событие";
+"categoryListStubLabel.text" = "Привычки и события можно\nобъединить по смыслу";
+"addCategory" = "Добавить категорию";
+"categoryDeleteAlert.title" = "Удалить категорию?";
+"categoryDeleteAlert.text" = "Вы уверены, что хотите удалить категорию '\(categoryToDelete.title)'?";
+"newCategoryTextFieldPlaceholder" = "Введите название категории";
+"newCategoryNavItem.title" = "Новая категория";
+"ready" = "Готово";
+"cancel" = "Отменить";
+"create" = "Создать";
+"delete" = "Удалить";
+"delete.confirmation" = "Уверены что хотите удалить трекер?";
+"category" = "Категория";
+"schedule" = "Расписание";
+"everyDay" = "Каждый день";
+
+"monday" = "Понедельник";
+"tuesday" = "Вторник";
+"wednesday" = "Среда";
+"thursday" = "Четверг";
+"friday" = "Пятница";
+"saturday" = "Суббота";
+"sunday" = "Воскресенье";
+
+"monday.shortname" = "Пн";
+"tuesday.shortname" = "Вт";
+"wednesday.shortname" = "Ср";
+"thursday.shortname" = "Чт";
+"friday.shortname" = "Пт";
+"saturday.shortname" = "Сб";
+"sunday.shortname" = "Вс";
+

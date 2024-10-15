@@ -34,7 +34,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var trackersLabel: UILabel = {
         let label = UILabel()
-        label.text = "Трекеры"
+        label.text = "trackers".localized()
         label.textColor = UIColor(named: "YBlackColor") ?? .black
         label.font = UIFont.boldSystemFont(ofSize: 34)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -44,7 +44,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     private lazy var searchTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 17)
-        textField.placeholder = "Поиск"
+        textField.placeholder = "search".localized()
         textField.backgroundColor = UIColor(named: "SearchFieldColor") ?? .lightGray
         textField.translatesAutoresizingMaskIntoConstraints = false
         
@@ -78,7 +78,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var stubLabel: UILabel = {
         let label = UILabel()
-        label.text = "Что будем отслеживать?"
+        label.text = "emptyState.title".localized()
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = UIColor(named: "YBlackColor") ?? .black
         label.textAlignment = .center
@@ -141,7 +141,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         picker.preferredDatePickerStyle = .compact
         picker.datePickerMode = .date
         picker.translatesAutoresizingMaskIntoConstraints = false
-        picker.locale = Locale(identifier: "ru_RU")
+        picker.locale = Locale.current
         picker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
         
         NSLayoutConstraint.activate([

@@ -49,7 +49,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     private lazy var trackerNameTextField: PaddedTextField = {
         let textField = PaddedTextField()
         textField.font = UIFont.systemFont(ofSize: 17)
-        textField.placeholder = "Введите название события"
+        textField.placeholder = "trackerNameTextFieldPlaceholder.title".localized()
         textField.layer.cornerRadius = 16
         textField.backgroundColor = UIColor(named: "TableViewColor")
         textField.clearButtonMode = .whileEditing
@@ -59,7 +59,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     }()
     private lazy var limitLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "limitLabelText".localized()
         label.textColor = UIColor(named: "CancelButtonColor")
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 17)
@@ -70,7 +70,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     }()
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle("cancel".localized(), for: .normal)
         button.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
@@ -83,7 +83,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     }()
     private lazy var createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("create".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.backgroundColor = UIColor(named: "YGrayColor")
@@ -109,7 +109,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Новое нерегулярное событие"
+        navigationItem.title = "newIrregularTrackerNavItem.title".localized()
         view.backgroundColor = .white
 
         setupScrollView()
@@ -129,7 +129,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
 
     private func setupButtons() {
         cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Отменить", for: .normal)
+        cancelButton.setTitle("cancel".localized(), for: .normal)
         cancelButton.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
         cancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         cancelButton.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
@@ -140,7 +140,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
         cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
 
         createButton = UIButton(type: .system)
-        createButton.setTitle("Создать", for: .normal)
+        createButton.setTitle("create".localized(), for: .normal)
         createButton.setTitleColor(.white, for: .normal)
         createButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         createButton.backgroundColor = UIColor(named: "YGrayColor")
@@ -276,7 +276,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as? CustomTableViewCell else {
             fatalError("Unable to dequeue CustomTableViewCell")
         }
-        let mainText = "Категория"
+        let mainText = "category".localized()
         
         if let selectedCategory = selectedCategory {
             let combinedText = "\(mainText)\n\(selectedCategory)"

@@ -1,0 +1,53 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Anton Demidenko on 14.10.24..
+  
+*/
+
+"onboardingLabelText1" = "ติดตามเฉพาะ\nสิ่งที่คุณต้องการ";
+"onboardingLabelText2" = "แม้ว่าจะไม่ใช่\nลิตรของน้ำและโยคะ";
+"onboardingButton.title" = "เทคโนโลยีที่ยอดเยี่ยม!";
+"trackers" = "ตัวติดตาม";
+"statistics" = "สถิติ";
+"search" = "ค้นหา";
+"emptyState.title" = "เราจะติดตามอะไร?";
+"newTrackerViewController.title" = "";
+"newTrackerNavItem.title" = "สร้างตัวติดตาม";
+"habitButton.title" = "นิสัย";
+"irregularEventButton.title" = "เหตุการณ์ไม่ปกติ";
+"trackerNameTextFieldPlaceholder.title" = "ใส่ชื่อตัวติดตาม";
+"limitLabelText" = "จำกัด 38 ตัวอักษร";
+"newRegularTrackerNavItem.title" = "นิสัยใหม่";
+"newIrregularTrackerNavItem.title" = "เหตุการณ์ไม่ปกติใหม่";
+"categoryListStubLabel.text" = "นิสัยและเหตุการณ์สามารถ\nรวมเข้าด้วยกันอย่างมีความหมาย";
+"addCategory" = "เพิ่มหมวดหมู่";
+"categoryDeleteAlert.title" = "ลบหมวดหมู่?";
+"categoryDeleteAlert.text" = "คุณแน่ใจหรือว่าต้องการลบหมวดหมู่ '\(categoryToDelete.title)'?";
+"newCategoryTextFieldPlaceholder" = "ใส่ชื่อหมวดหมู่";
+"newCategoryNavItem.title" = "หมวดหมู่ใหม่";
+"ready" = "พร้อม";
+"cancel" = "ยกเลิก";
+"create" = "สร้าง";
+"delete" = "ลบ";
+"delete.confirmation" = "คุณแน่ใจหรือว่าต้องการลบตัวติดตาม?";
+"category" = "หมวดหมู่";
+"schedule" = "ตารางเวลา";
+"everyDay" = "ทุกวัน";
+
+"monday" = "วันจันทร์";
+"tuesday" = "วันอังคาร";
+"wednesday" = "วันพุธ";
+"thursday" = "วันพฤหัสบดี";
+"friday" = "วันศุกร์";
+"saturday" = "วันเสาร์";
+"sunday" = "วันอาทิตย์";
+
+"monday.shortname" = "จ.";
+"tuesday.shortname" = "อ.";
+"wednesday.shortname" = "พ.";
+"thursday.shortname" = "พฤ.";
+"friday.shortname" = "ศ.";
+"saturday.shortname" = "ส.";
+"sunday.shortname" = "อา.";

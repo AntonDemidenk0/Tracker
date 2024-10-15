@@ -12,14 +12,14 @@ final class OnboardingViewController: UIPageViewController, UIPageViewController
     lazy var pages: [UIViewController] = {
         let firstView = OnboardingPageViewController(
             imageName: "Onboarding1",
-            labelText: "Отслеживайте только\nто, что хотите",
-            buttonTitle: "Вот это технологии!"
+            labelText: "onboardingLabelText1".localized(),
+            buttonTitle: "onboardingButton.title".localized()
         )
         
         let secondView = OnboardingPageViewController(
             imageName: "Onboarding2",
-            labelText: "Даже если это\nне литры воды и йога",
-            buttonTitle: "Вот это технологии!"
+            labelText: "onboardingLabelText2".localized(),
+            buttonTitle: "onboardingButton.title".localized()
         )
         
         return [firstView, secondView]
