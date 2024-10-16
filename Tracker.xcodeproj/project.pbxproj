@@ -24,6 +24,7 @@
 		1FA5E00F2C90D165007A729D /* NewUsualTrackerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E00E2C90D165007A729D /* NewUsualTrackerVC.swift */; };
 		1FA5E0112C90D414007A729D /* EmojiVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E0102C90D414007A729D /* EmojiVC.swift */; };
 		1FA5E0132C90D631007A729D /* SectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FA5E0122C90D631007A729D /* SectionHeaderView.swift */; };
+		1FB3F3D82CBFC1C0001981AF /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB3F3D72CBFC1C0001981AF /* Strings.swift */; };
 		1FC47BB42C94300200DFABE4 /* CategoryListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB32C94300200DFABE4 /* CategoryListVC.swift */; };
 		1FC47BB62C943D0500DFABE4 /* NewCategoryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB52C943D0500DFABE4 /* NewCategoryVC.swift */; };
 		1FC47BB92C943DE200DFABE4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB82C943DE200DFABE4 /* Extensions.swift */; };
@@ -64,6 +65,7 @@
 		1FA5E00E2C90D165007A729D /* NewUsualTrackerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewUsualTrackerVC.swift; sourceTree = "<group>"; };
 		1FA5E0102C90D414007A729D /* EmojiVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiVC.swift; sourceTree = "<group>"; };
 		1FA5E0122C90D631007A729D /* SectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeaderView.swift; sourceTree = "<group>"; };
+		1FB3F3D72CBFC1C0001981AF /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		1FC47BB32C94300200DFABE4 /* CategoryListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryListVC.swift; sourceTree = "<group>"; };
 		1FC47BB52C943D0500DFABE4 /* NewCategoryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewCategoryVC.swift; sourceTree = "<group>"; };
 		1FC47BB82C943DE200DFABE4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 		1FE8EB5B2CBE85B5004E281F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1FE8EB5E2CBE85BA004E281F /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1FE8EB5F2CBE85BC004E281F /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1FE8EB682CBE9C37004E281F /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,8 +102,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FE8EB642CBE8AFE004E281F /* SwiftGenKit in Frameworks */,
-				1FE8EB622CBE8AFE004E281F /* SwiftGenCLI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,11 +226,21 @@
 		1FE8EB312CBD1A3C004E281F /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1FE8EB6A2CBE9C63004E281F /* Generated */,
+				1FE8EB682CBE9C37004E281F /* swiftgen.yml */,
 				1FE8EB5C2CBE85B5004E281F /* InfoPlist.strings */,
 				1FE8EB322CBD1A54004E281F /* Localizable.strings */,
 				1FE8EB372CBD2858004E281F /* Localizable.stringsdict */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		1FE8EB6A2CBE9C63004E281F /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				1FB3F3D72CBFC1C0001981AF /* Strings.swift */,
+			);
+			path = Generated;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -309,6 +320,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FA5E0132C90D631007A729D /* SectionHeaderView.swift in Sources */,
+				1FB3F3D82CBFC1C0001981AF /* Strings.swift in Sources */,
 				1F9FB3602CA49D72001ACF03 /* Colors.swift in Sources */,
 				1FC47BBD2C9C925400DFABE4 /* TabBarController.swift in Sources */,
 				1FA5E00B2C90A485007A729D /* EmojiCollectionViewCell.swift in Sources */,
@@ -578,30 +590,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		1FE8EB602CBE8AFE004E281F /* XCRemoteSwiftPackageReference "SwiftGen" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftGen/SwiftGen";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.6.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		1FE8EB612CBE8AFE004E281F /* SwiftGenCLI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1FE8EB602CBE8AFE004E281F /* XCRemoteSwiftPackageReference "SwiftGen" */;
-			productName = SwiftGenCLI;
-		};
-		1FE8EB632CBE8AFE004E281F /* SwiftGenKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1FE8EB602CBE8AFE004E281F /* XCRemoteSwiftPackageReference "SwiftGen" */;
-			productName = SwiftGenKit;
-		};
-/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		1F9FB35C2CA2F1A2001ACF03 /* TrackerModel.xcdatamodeld */ = {

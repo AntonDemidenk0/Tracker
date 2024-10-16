@@ -16,7 +16,7 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("habitButton.title".localized(), for: .normal)
+        button.setTitle(L10n.HabitButton.title, for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
@@ -28,7 +28,7 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("irregularEventButton.title".localized(), for: .normal)
+        button.setTitle(L10n.IrregularEventButton.title, for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
@@ -44,7 +44,7 @@ final class NewTrackerViewController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = .white
-        navigationItem.title = "newTrackerNavItem.title".localized()
+        navigationItem.title = L10n.NewTrackerNavItem.title
         
         view.addSubview(habitButton)
         view.addSubview(irregularEventButton)
