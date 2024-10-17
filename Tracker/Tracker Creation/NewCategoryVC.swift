@@ -64,7 +64,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "newCategoryNavItem.title".localized()
-        view.backgroundColor = .white
+        applyBackgroundColor()
         view.addSubview(categoryNameTextField)
         view.addSubview(readyButton)
         view.addSubview(limitLabel)
@@ -131,6 +131,9 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
         
         if let text = textField.text, !text.isEmpty {
             readyButton.isEnabled = true
+            let isDarkMode = traitCollection.userInterfaceStyle == .dark
+            let textColor = isDarkMode ? UIColor(named: "TabBarBorderColor") : .white
+            readyButton.setTitleColor(textColor, for: .normal)
             readyButton.backgroundColor = UIColor(named: "YBlackColor")
             
             if text.count > 38 {

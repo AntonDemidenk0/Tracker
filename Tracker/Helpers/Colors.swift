@@ -32,4 +32,3 @@ enum AppColor: String, CaseIterable {
         return UIColor(named: self.rawValue) ?? UIColor.clear
     }
 }
-

@@ -24,7 +24,7 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.delegate = self
         collectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
-        collectionView.backgroundColor = .white
+        applyBackgroundColor()
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()

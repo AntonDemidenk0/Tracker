@@ -111,7 +111,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "newRegularTrackerNavItem.title".localized()
-        view.backgroundColor = .white
+        applyBackgroundColor()
         
         setupScrollView()
         setupTextField()
@@ -235,10 +235,17 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         let isScheduleSelected = !(selectedDaysString.isEmpty)
         let isColorSelected = colorVC.selectedColorName != nil
         let isEmojiSelected = emojiVC.selectedEmoji != nil
-        
+
         createButton.isEnabled = isTrackerNameValid && isCategorySelected && isScheduleSelected && isColorSelected && isEmojiSelected
-        createButton.backgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
+        
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+        let buttonBackgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
+        let buttonTextColor = createButton.isEnabled && isDarkMode ? UIColor(named: "TabBarBorderColor") : UIColor.white
+        
+        createButton.backgroundColor = buttonBackgroundColor
+        createButton.setTitleColor(buttonTextColor, for: .normal)
     }
+
     
     // MARK: - UITableViewDataSource
     

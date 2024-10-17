@@ -33,11 +33,15 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
         let button = UIButton(type: .system)
         button.setTitle("ready".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+        let textColor = isDarkMode ? UIColor(named: "TabBarBorderColor") : .white
+        button.setTitleColor(textColor, for: .normal)
+        
         return button
     }()
     
@@ -76,7 +80,7 @@ final class ScheduleListViewController: UIViewController, UITableViewDataSource,
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        applyBackgroundColor()
         navigationItem.title = "schedule".localized()
         setupTableView()
         setupReadyButton()

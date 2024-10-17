@@ -24,3 +24,9 @@ extension String {
         return NSLocalizedString(self, comment: "")
     }
 }
+
+extension UIViewController {
+    func applyBackgroundColor() {
+        self.view.backgroundColor = UIColor.systemBackground
+    }
+}

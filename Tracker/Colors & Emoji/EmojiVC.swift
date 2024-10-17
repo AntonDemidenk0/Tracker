@@ -25,7 +25,7 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.delegate = self
         collectionView.register(EmojiCollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
-        collectionView.backgroundColor = .white
+        applyBackgroundColor()
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()

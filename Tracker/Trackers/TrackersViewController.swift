@@ -107,7 +107,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        applyBackgroundColor()
         setupUI()
         loadCategories()
         setupNavigationBar()
@@ -149,6 +149,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
             picker.heightAnchor.constraint(equalToConstant: 35)
         ])
         let datePickerBarButtonItem = UIBarButtonItem(customView: picker)
+        datePickerBarButtonItem.tintColor = .clear
         navigationItem.leftBarButtonItem = plusButtonItem
         navigationItem.rightBarButtonItem = datePickerBarButtonItem
     }

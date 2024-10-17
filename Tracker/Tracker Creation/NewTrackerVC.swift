@@ -18,7 +18,7 @@ final class NewTrackerViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle(L10n.HabitButton.title, for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.systemBackground, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(newUsualTracker), for: .touchUpInside)
@@ -30,7 +30,7 @@ final class NewTrackerViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle(L10n.IrregularEventButton.title, for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.systemBackground, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(newIrregularTracker), for: .touchUpInside)
@@ -42,8 +42,7 @@ final class NewTrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = .white
+        applyBackgroundColor()
         navigationItem.title = L10n.NewTrackerNavItem.title
         
         view.addSubview(habitButton)

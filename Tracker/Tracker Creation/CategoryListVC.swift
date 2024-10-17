@@ -52,18 +52,22 @@ final class CategoryListViewController: UIViewController, UITableViewDataSource,
         let button = UIButton(type: .system)
         button.setTitle("addCategory".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(newCategory), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
+        
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+        let textColor = isDarkMode ? UIColor(named: "TabBarBorderColor") : .white
+        button.setTitleColor(textColor, for: .normal)
+        
         return button
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "category".localized()
-        view.backgroundColor = .white
+        applyBackgroundColor()
         
         viewModel.onCategoriesUpdated = { [weak self] in
             self?.updateUI()

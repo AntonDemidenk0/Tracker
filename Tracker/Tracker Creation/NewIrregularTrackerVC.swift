@@ -110,7 +110,7 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "newIrregularTrackerNavItem.title".localized()
-        view.backgroundColor = .white
+        applyBackgroundColor()
 
         setupScrollView()
         setupTextField()
@@ -249,14 +249,21 @@ final class NewIrregularTrackerViewController: UIViewController, UITableViewData
 
     
     func updateCreateButtonState() {
-        let isTrackerNameValid = !(trackerName?.isEmpty ?? true)
+        let isTrackerNameValid = trackerName != nil
         let isCategorySelected = selectedCategory != nil
         let isColorSelected = colorVC.selectedColorName != nil
         let isEmojiSelected = emojiVC.selectedEmoji != nil
-        
+
         createButton.isEnabled = isTrackerNameValid && isCategorySelected && isColorSelected && isEmojiSelected
-        createButton.backgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
+        
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+        let buttonBackgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
+        let buttonTextColor = createButton.isEnabled && isDarkMode ? UIColor(named: "TabBarBorderColor") : UIColor.white
+        
+        createButton.backgroundColor = buttonBackgroundColor
+        createButton.setTitleColor(buttonTextColor, for: .normal)
     }
+
     
     // MARK: - UITableViewDataSource
     
