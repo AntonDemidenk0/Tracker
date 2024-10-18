@@ -12,7 +12,10 @@ import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
     func didToggleCompletion(for tracker: Tracker, on date: Date)
-}
+    func didPinTracker(_ tracker: Tracker)
+    func didEditTracker(_ tracker: Tracker)
+    func didPushDelete(_ tracker: Tracker)
+    }
 
 // MARK: - TrackerCell
 
@@ -45,6 +48,12 @@ final class TrackerCell: UICollectionViewCell {
         let view = UIView()
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var footerView: UIView = {
+        let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -86,13 +95,23 @@ final class TrackerCell: UICollectionViewCell {
         contentView.addSubview(containerView)
         containerView.addSubview(nameLabel)
         containerView.addSubview(emojiLabel)
-        contentView.addSubview(daysLabel)
-        contentView.addSubview(actionButton)
+        
+        contentView.addSubview(footerView)
+        footerView.addSubview(daysLabel)
+        footerView.addSubview(actionButton)
+        
         setupLayout()
+        setupContextMenuInteraction()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupContextMenuInteraction()
+    }
+    
+    private func setupContextMenuInteraction() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        containerView.addInteraction(interaction)
     }
     
     // MARK: - Configure Cell
@@ -141,14 +160,20 @@ final class TrackerCell: UICollectionViewCell {
             nameLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12),
             
-            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            daysLabel.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 16),
+            footerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            footerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            footerView.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 8),
+            footerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            footerView.heightAnchor.constraint(equalToConstant: 34),
+            
+            daysLabel.leadingAnchor.constraint(equalTo: footerView.leadingAnchor, constant: 12),
+            daysLabel.centerYAnchor.constraint(equalTo: footerView.centerYAnchor),
             daysLabel.heightAnchor.constraint(equalToConstant: 20),
             
             actionButton.widthAnchor.constraint(equalToConstant: 34),
             actionButton.heightAnchor.constraint(equalToConstant: 34),
-            actionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            actionButton.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 8),
+            actionButton.trailingAnchor.constraint(equalTo: footerView.trailingAnchor, constant: -12),
+            actionButton.centerYAnchor.constraint(equalTo: footerView.centerYAnchor)
         ])
     }
     
@@ -184,5 +209,30 @@ final class TrackerCell: UICollectionViewCell {
     
     func updateDaysLabel(with count: Int) {
         daysLabel.text = count.formatDays()
+    }
+}
+
+extension TrackerCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        guard let tracker = self.tracker else {
+            return nil
+        }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+
+            let pinAction = UIAction(title: "Закрепить", image: UIImage(systemName: "pin")) { _ in
+                self.delegate?.didPinTracker(tracker)
+            }
+
+            let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { _ in
+                self.delegate?.didEditTracker(tracker)
+            }
+
+            let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.delegate?.didPushDelete(tracker)
+            }
+
+            return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
+        }
     }
 }

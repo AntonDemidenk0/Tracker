@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Tracker: Codable {
+struct Tracker: Codable, Hashable {
     let id: UUID
     let name: String
     let color: String

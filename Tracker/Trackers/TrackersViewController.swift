@@ -10,10 +10,15 @@ import UIKit
 final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
-    private let trackerStore = TrackerStore()
+    private let trackerStore = TrackerStore.shared
     private let trackerCategoryStore = TrackerCategoryStore.shared
     private let trackerRecordStore = TrackerRecordStore()
-    private var trackers: [Tracker] = []
+    private var trackers: Set<Tracker> = [] {
+        didSet {
+            updateUIForTrackers()
+            trackerStore.saveTrackers()
+        }
+    }
     private var filteredCategories: [TrackerCategory] = []
     private var categories: [TrackerCategory] = [] {
         didSet {
@@ -29,6 +34,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     }
     
     private var completedTrackers: Set<TrackerRecord> = []
+    private var pinnedTrackers: Set<Tracker> = []
     
     // MARK: - UI Elements
     
@@ -112,6 +118,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         loadCategories()
         setupNavigationBar()
         loadCompletedTrackers()
+        loadPinnedTrackers()
         updateUIForTrackers()
         searchTextField.delegate = self
     }
@@ -324,11 +331,11 @@ extension TrackersViewController {
             let trackerRecord = TrackerRecord(trackerId: tracker.id, date: date)
             return completedTrackers.contains(trackerRecord)
         }
-
+        
         if let completionRecord = completedTrackers.first(where: { $0.trackerId == tracker.id }) {
             return Calendar.current.isDate(date, inSameDayAs: completionRecord.date)
         }
-
+        
         return false
     }
     
@@ -369,7 +376,7 @@ extension TrackersViewController {
     private func shouldDisplayTracker(_ tracker: Tracker, on date: Date) -> Bool {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
-
+        
         if let schedule = tracker.schedule {
             let currentWeekDay = calendar.component(.weekday, from: date)
             guard let selectedWeekDay = WeekDay(rawValue: currentWeekDay == 1 ? 7 : currentWeekDay - 1) else {
@@ -382,7 +389,6 @@ extension TrackersViewController {
         
         return true
     }
-
 }
 
 // MARK: - Data Persistence
@@ -411,6 +417,78 @@ extension TrackersViewController: TrackerCellDelegate {
         }
     }
     
+    func didPinTracker(_ tracker: Tracker) {
+        do {
+            let isPinned = try isTrackerPinned(tracker)
+            if isPinned {
+                try unpinTracker(tracker)
+                print("Трекер \(tracker.name) откреплен")
+            } else {
+                try trackerStore.pin(tracker)
+                print("Трекер \(tracker.name) закреплен")
+            }
+        } catch {
+            print("Ошибка при попытке закрепить/открепить трекер: \(error)")
+        }
+        loadCategories()
+        updateUIForTrackers()
+    }
+    
+    func isTrackerPinned(_ tracker: Tracker) -> Bool {
+        return pinnedTrackers.contains { $0.id == tracker.id }
+    }
+    
+    private func unpinTracker(_ tracker: Tracker) {
+        if pinnedTrackers.remove(tracker) != nil {
+            do {
+                try trackerStore.deleteTracker(withId: tracker.id)
+                updateUIForTrackers()
+            } catch {
+                print("Ошибка при удалении трекера: \(error)")
+            }
+        }
+    }
+    
+    func didEditTracker(_ tracker: Tracker) {
+        // Логика для редактирования трекера
+        print("Редактирование трекера \(tracker.name)")
+    }
+    
+    func didPushDelete(_ tracker: Tracker) {
+        let alertController = UIAlertController(
+            title: "Уверены что хотите удалить трекер?",
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            guard let self = self else { return }
+            do {
+                try self.trackerStore.deleteTracker(withId: tracker.id)
+            
+                self.loadCategories()
+                self.updateUIForTrackers()
+                
+            } catch {
+                print("Ошибка при удалении трекера: \(error)")
+            }
+        }
+
+        let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
+        
+        alertController.addAction(deleteAction)
+        alertController.addAction(cancelAction)
+
+        if let popoverController = alertController.popoverPresentationController {
+            popoverController.sourceView = view
+            popoverController.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = .any
+        }
+
+        present(alertController, animated: true, completion: nil)
+    }
+
+    
     private func saveCompletedTrackers() {
         for trackerRecord in completedTrackers {
             do {
@@ -425,6 +503,11 @@ extension TrackersViewController: TrackerCellDelegate {
     private func loadCompletedTrackers() {
         completedTrackers = Set(trackerRecordStore.trackerRecords)
         print("Загружено из CoreData: \(completedTrackers)")
+    }
+    
+    private func loadPinnedTrackers() {
+        let pinnedTrackers = trackerStore.pinnedTrackers(title: "Закрепленные")
+        print("Загруженные закрепленные трекеры: \(pinnedTrackers)")
     }
     
     // MARK: - Delegate Methods

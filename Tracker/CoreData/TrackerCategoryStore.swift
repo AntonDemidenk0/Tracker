@@ -13,7 +13,7 @@ final class TrackerCategoryStore: NSObject {
     static let shared = TrackerCategoryStore()
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
-    private let trackerStore: TrackerStore
+    private var trackerStore = TrackerStore.shared
     
     var categories: [TrackerCategory] {
         return fetchCategoriesFromCoreData()

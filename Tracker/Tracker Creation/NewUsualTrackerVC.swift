@@ -10,7 +10,7 @@ import UIKit
 final class NewUsualTrackerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
     
     // MARK: - Properties
-    private let trackerStore = TrackerStore()
+    private let trackerStore = TrackerStore.shared
     private var selectedCategory: String?
     private var selectedDaysString: String = "" {
         didSet {
