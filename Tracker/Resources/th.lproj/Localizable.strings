@@ -6,6 +6,7 @@
   
 */
 
+
 "onboardingLabelText1" = "ติดตามเฉพาะ\nสิ่งที่คุณต้องการ";
 "onboardingLabelText2" = "แม้ว่าจะไม่ใช่\nลิตรของน้ำและโยคะ";
 "onboardingButton.title" = "เทคโนโลยีที่ยอดเยี่ยม!";
@@ -33,6 +34,10 @@
 "delete" = "ลบ";
 "delete.confirmation" = "คุณแน่ใจหรือว่าต้องการลบตัวติดตาม?";
 "category" = "หมวดหมู่";
+"pinned" = "ปักหมุด";
+"pin" = "ปักหมุด";
+"unpin" = "ยกเลิกการปักหมุด";
+"edit" = "แก้ไข";
 "schedule" = "ตารางเวลา";
 "everyDay" = "ทุกวัน";
 

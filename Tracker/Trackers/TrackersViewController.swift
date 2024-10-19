@@ -32,6 +32,11 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
             updateUIForTrackers()
         }
     }
+    private var originalCategories: [UUID: String] = [:] {
+        didSet {
+            saveOriginalCategoriesToUserDefaults()
+        }
+    }
     
     private var completedTrackers: Set<TrackerRecord> = []
     private var pinnedTrackers: Set<Tracker> = []
@@ -119,6 +124,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         setupNavigationBar()
         loadCompletedTrackers()
         loadPinnedTrackers()
+        loadOriginalCategoriesFromUserDefaults()
         updateUIForTrackers()
         searchTextField.delegate = self
     }
@@ -214,6 +220,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         
         do {
             try trackerStore.addTracker(tracker, to: categoryTitle)
+            originalCategories[tracker.id] = categoryTitle
             categories = trackerCategoryStore.categories
             saveCategories()
             loadCategories()
@@ -370,6 +377,7 @@ extension TrackersViewController {
         }
         
         self.filteredCategories = filteredCategories
+        sortCategories()
         collectionView.reloadData()
     }
     
@@ -388,6 +396,31 @@ extension TrackersViewController {
         }
         
         return true
+    }
+    
+    private func saveOriginalCategoriesToUserDefaults() {
+        let data = try? JSONEncoder().encode(originalCategories)
+        UserDefaults.standard.set(data, forKey: "OriginalCategories")
+    }
+    
+    private func loadOriginalCategoriesFromUserDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "OriginalCategories"),
+           let categories = try? JSONDecoder().decode([UUID: String].self, from: data) {
+            originalCategories = categories
+        } else {
+            originalCategories = [:]
+        }
+    }
+    
+    private func sortCategories() {
+        if let pinnedCategoryIndex = filteredCategories.firstIndex(where: { $0.title == "pinned".localized() }) {
+            let pinnedCategory = filteredCategories[pinnedCategoryIndex]
+            
+            if !pinnedCategory.trackers.isEmpty {
+                filteredCategories.remove(at: pinnedCategoryIndex)
+                filteredCategories.insert(pinnedCategory, at: 0)
+            }
+        }
     }
 }
 
@@ -419,38 +452,62 @@ extension TrackersViewController: TrackerCellDelegate {
     
     func didPinTracker(_ tracker: Tracker) {
         do {
-            let isPinned = try isTrackerPinned(tracker)
-            if isPinned {
-                try unpinTracker(tracker)
-                print("Трекер \(tracker.name) откреплен")
-            } else {
-                try trackerStore.pin(tracker)
-                print("Трекер \(tracker.name) закреплен")
-            }
+            try pin(tracker)
+            print("Трекер \(tracker.name) закреплен")
         } catch {
-            print("Ошибка при попытке закрепить/открепить трекер: \(error)")
+            print("Ошибка при попытке закрепить трекер: \(error)")
+        }
+        loadCategories()
+        updateUIForTrackers()
+    }
+    
+    func didUnpinTracker(_ tracker: Tracker) {
+        do {
+            try unpin(tracker)
+            print("Трекер \(tracker.name) откреплен")
+        } catch {
+            print("Ошибка при попытке открепить трекер: \(error)")
         }
         loadCategories()
         updateUIForTrackers()
     }
     
     func isTrackerPinned(_ tracker: Tracker) -> Bool {
-        return pinnedTrackers.contains { $0.id == tracker.id }
+        if let category = getCategory(for: tracker.id) {
+            return category == "pinned".localized()
+        }
+        return false
     }
     
-    private func unpinTracker(_ tracker: Tracker) {
-        if pinnedTrackers.remove(tracker) != nil {
-            do {
-                try trackerStore.deleteTracker(withId: tracker.id)
-                updateUIForTrackers()
-            } catch {
-                print("Ошибка при удалении трекера: \(error)")
+    func getCategory(for trackerId: UUID) -> String? {
+        let allCategories = trackerCategoryStore.fetchCategories()
+        
+        for category in allCategories {
+            if category.trackers.contains(where: { $0.id == trackerId }) {
+                return category.title
             }
+        }
+        return nil
+    }
+    
+    func pin(_ tracker: Tracker) throws {
+        
+        try trackerStore.deleteTracker(withId: tracker.id)
+        
+        let pinnedTracker = Tracker(id: tracker.id, name: tracker.name, color: tracker.color, emoji: tracker.emoji, schedule: tracker.schedule)
+        try trackerStore.addTracker(pinnedTracker, to: "pinned".localized())
+    }
+    
+    func unpin(_ tracker: Tracker) throws {
+        try trackerStore.deleteTracker(withId: tracker.id)
+        
+        if let originalCategoryTitle = originalCategories[tracker.id] {
+            let unpinnedTracker = Tracker(id: tracker.id, name: tracker.name, color: tracker.color, emoji: tracker.emoji, schedule: tracker.schedule)
+            try trackerStore.addTracker(unpinnedTracker, to: originalCategoryTitle)
         }
     }
     
     func didEditTracker(_ tracker: Tracker) {
-        // Логика для редактирования трекера
         print("Редактирование трекера \(tracker.name)")
     }
     
@@ -460,12 +517,14 @@ extension TrackersViewController: TrackerCellDelegate {
             message: nil,
             preferredStyle: .actionSheet
         )
-
+        
         let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             do {
                 try self.trackerStore.deleteTracker(withId: tracker.id)
-            
+                
+                self.originalCategories[tracker.id] = nil
+                
                 self.loadCategories()
                 self.updateUIForTrackers()
                 
@@ -473,21 +532,20 @@ extension TrackersViewController: TrackerCellDelegate {
                 print("Ошибка при удалении трекера: \(error)")
             }
         }
-
+        
         let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
         
         alertController.addAction(deleteAction)
         alertController.addAction(cancelAction)
-
+        
         if let popoverController = alertController.popoverPresentationController {
             popoverController.sourceView = view
             popoverController.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
             popoverController.permittedArrowDirections = .any
         }
-
+        
         present(alertController, animated: true, completion: nil)
     }
-
     
     private func saveCompletedTrackers() {
         for trackerRecord in completedTrackers {
@@ -506,7 +564,7 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     private func loadPinnedTrackers() {
-        let pinnedTrackers = trackerStore.pinnedTrackers(title: "Закрепленные")
+        let pinnedTrackers = trackerStore.pinnedTrackers(title: "pinned".localized())
         print("Загруженные закрепленные трекеры: \(pinnedTrackers)")
     }
     

@@ -82,7 +82,6 @@ final class TrackerStore: NSObject {
     }
     
     func deleteTracker(withId id: UUID) throws {
-        print("deleteTracker вызывается")
         try removeTrackerFromCoreData(id: id)
         try saveContext()
     }
@@ -232,39 +231,39 @@ final class TrackerStore: NSObject {
     }
     
     private func editTrackerInCoreData(_ tracker: Tracker) throws {
-            let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
-            
-            guard let trackerCoreData = try context.fetch(fetchRequest).first else {
-                throw TrackerStoreError.decodingErrorInvalidID
-            }
-            
-            trackerCoreData.name = tracker.name
-            trackerCoreData.color = tracker.color
-            trackerCoreData.emoji = tracker.emoji
-            
-            if let schedule = tracker.schedule {
-                trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
-            } else {
-                trackerCoreData.schedule = nil
-            }
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        
+        guard let trackerCoreData = try context.fetch(fetchRequest).first else {
+            throw TrackerStoreError.decodingErrorInvalidID
         }
-
-        private func removeTrackerFromCoreData(id: UUID) throws {
-            let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            
-            guard let trackerToDelete = try context.fetch(fetchRequest).first else {
-                throw TrackerStoreError.decodingErrorInvalidID
-            }
-            
-            context.delete(trackerToDelete)
+        
+        trackerCoreData.name = tracker.name
+        trackerCoreData.color = tracker.color
+        trackerCoreData.emoji = tracker.emoji
+        
+        if let schedule = tracker.schedule {
+            trackerCoreData.schedule = try JSONEncoder().encode(schedule) as NSData
+        } else {
+            trackerCoreData.schedule = nil
         }
+    }
+    
+    private func removeTrackerFromCoreData(id: UUID) throws {
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        guard let trackerToDelete = try context.fetch(fetchRequest).first else {
+            throw TrackerStoreError.decodingErrorInvalidID
+        }
+        
+        context.delete(trackerToDelete)
+    }
     
     private func pinTracker(_ tracker: Tracker) throws {
-        let pinnedCategoryTitle = "Закрепленные"
+        let pinnedCategory = TrackerCategoryStore.shared.pinnedCategory
         
-        try addTrackerToCategory(tracker, categoryTitle: pinnedCategoryTitle)
+        try addTrackerToCategory(tracker, categoryTitle: pinnedCategory.title)
     }
     
     

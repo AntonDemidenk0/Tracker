@@ -6,6 +6,7 @@
   
 */
 
+
 "onboardingLabelText1" = "Track only\nwhat you want";
 "onboardingLabelText2" = "Even if it's not\nliters of water and yoga";
 "onboardingButton.title" = "What a technology!";
@@ -33,6 +34,10 @@
 "delete" = "Delete";
 "delete.confirmation" = "Are you sure you want to delete the tracker?";
 "category" = "Category";
+"pinned" = "Pinned";
+"pin" = "Pin";
+"unpin" = "Unpin";
+"edit" = "Edit";
 "schedule" = "Schedule";
 "everyDay" = "Every day";
 

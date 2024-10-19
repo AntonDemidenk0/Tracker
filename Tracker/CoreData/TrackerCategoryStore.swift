@@ -25,6 +25,11 @@ final class TrackerCategoryStore: NSObject {
         }
     }
     
+    let pinnedCategory: TrackerCategory = TrackerCategory(
+            title: "pinned".localized(),
+            trackers: []
+        )
+    
     var onCategoriesUpdated: (() -> Void)?
 
     // MARK: - Initializers
