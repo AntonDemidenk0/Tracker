@@ -13,6 +13,8 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     private let trackerStore = TrackerStore.shared
     private let trackerCategoryStore = TrackerCategoryStore.shared
     private let trackerRecordStore = TrackerRecordStore()
+    private lazy var colorVC = ColorViewController()
+    private lazy var emojiVC = EmojiViewController()
     private var trackers: Set<Tracker> = [] {
         didSet {
             updateUIForTrackers()
@@ -230,6 +232,16 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
             print("Failed to add tracker: \(error)")
         }
     }
+    
+    func updateTracker(_ tracker: Tracker, toCategoryTitle categoryTitle: String) {
+        originalCategories[tracker.id] = categoryTitle
+        categories = trackerCategoryStore.categories
+        saveCategories()
+        loadCategories()
+        updateUIForTrackers()
+        collectionView.reloadData()
+    }
+    
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
@@ -508,9 +520,82 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     func didEditTracker(_ tracker: Tracker) {
-        print("Редактирование трекера \(tracker.name)")
+        let categoryTitle = getCategory(for: tracker.id)
+        
+        if tracker.schedule != nil {
+
+            let editTrackerVC = EditTrackerViewController()
+            editTrackerVC.selectedCategory = categoryTitle
+            editTrackerVC.trackerNameTextField.text = tracker.name
+            editTrackerVC.trackerName = tracker.name
+            editTrackerVC.trackerId = tracker.id
+
+            if let color = UIColor(named: tracker.color) {
+                editTrackerVC.selectedColor = color
+                print("Цвет успешно найден: \(color)")
+            } else {
+                print("Ошибка: не удалось найти цвет с именем \(tracker.color)")
+            }
+
+            editTrackerVC.selectedEmoji = tracker.emoji
+            editTrackerVC.selectedDaysString = formatDays(tracker.schedule ?? [])
+
+            let numberOfDaysCompleted = trackerRecordStore.countDaysCompleted(for: tracker.id)
+            editTrackerVC.daysLabel.text = "\(numberOfDaysCompleted.formatDays())"
+            print("\(numberOfDaysCompleted.formatDays())")
+
+            editTrackerVC.setCompletionHandler { [weak self] editedTracker, categoryTitle in
+                guard let self = self else { return }
+                print("Вызов completionHandler перед созданием трекера")
+                self.updateTracker(tracker, toCategoryTitle: categoryTitle)
+                print("completionHandler вызван успешно")
+            }
+
+            let navController = UINavigationController(rootViewController: editTrackerVC)
+            self.present(navController, animated: true, completion: nil)
+            
+        } else {
+ 
+            let editIrregularTrackerVC = EditIrregularTrackerViewController()
+            editIrregularTrackerVC.selectedCategory = categoryTitle
+            editIrregularTrackerVC.trackerNameTextField.text = tracker.name
+            editIrregularTrackerVC.trackerName = tracker.name
+            editIrregularTrackerVC.trackerId = tracker.id
+
+            if let color = UIColor(named: tracker.color) {
+                editIrregularTrackerVC.selectedColor = color
+                print("Цвет успешно найден: \(color)")
+            } else {
+                print("Ошибка: не удалось найти цвет с именем \(tracker.color)")
+            }
+
+            editIrregularTrackerVC.selectedEmoji = tracker.emoji
+
+            let numberOfDaysCompleted = trackerRecordStore.countDaysCompleted(for: tracker.id)
+            editIrregularTrackerVC.daysLabel.text = "\(numberOfDaysCompleted.formatDays())"
+            print("\(numberOfDaysCompleted.formatDays())")
+
+            editIrregularTrackerVC.setCompletionHandler { [weak self] editedTracker, categoryTitle in
+                guard let self = self else { return }
+                print("Вызов completionHandler перед созданием трекера")
+                self.updateTracker(tracker, toCategoryTitle: categoryTitle)
+                print("completionHandler вызван успешно")
+            }
+
+            let navController = UINavigationController(rootViewController: editIrregularTrackerVC)
+            self.present(navController, animated: true, completion: nil)
+        }
     }
+
     
+    func formatDays(_ days: Set<WeekDay>) -> String {
+        let sortedDays = days.sorted { $0.rawValue < $1.rawValue }
+        if sortedDays.count == WeekDay.allCases.count {
+            return "Каждый день"
+        }
+        return sortedDays.map { $0.shortName }.joined(separator: ", ")
+    }
+
     func didPushDelete(_ tracker: Tracker) {
         let alertController = UIAlertController(
             title: "Уверены что хотите удалить трекер?",

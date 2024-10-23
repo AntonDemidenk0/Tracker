@@ -1,45 +1,57 @@
 //
-//  NewTrackerCreationVC.swift
+//   EditTrackerVC.swift
 //  Tracker
 //
-//  Created by Anton Demidenko on 10.9.24..
+//  Created by Anton Demidenko on 21.10.24..
 //
 
 import UIKit
 
-final class NewUsualTrackerViewController: TrackerCreationViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
+final class EditTrackerViewController: TrackerCreationViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
     
     // MARK: - Properties
     private let trackerStore = TrackerStore.shared
-    private var selectedCategory: String?
-    private var selectedDaysString: String = "" {
+    var selectedCategory: String?
+    var selectedDaysString: String = "" {
         didSet {
             tableView.reloadData()
         }
     }
     var trackersViewController: TrackersViewController?
-    private var trackerName: String?
+    var trackerName: String?
+    var trackerId: UUID?
     
-    private var completionHandler: ((Tracker, String) -> Void)?
+    lazy var daysLabel: UILabel = {
+        let label = UILabel()
+        label.text = "1"
+        label.textColor = UIColor(named: "YBlackColor") ?? .black
+        label.font = UIFont.boldSystemFont(ofSize: 32)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    var completionHandler: ((Tracker, String) -> Void)?
     
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
-    private var closeNewTrackerVCHandler: (() -> Void)?
-    func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
-        self.closeNewTrackerVCHandler = handler
-    }
+
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "newRegularTrackerNavItem.title".localized()
+        navigationItem.title = "editTracker.title".localized()
         tableView.dataSource = self
         tableView.delegate = self
         setupButtonActions()
+        setupInitialSelection()
+        adjustConstraits()
+        setupDaysLabel()
+        checkCreateButtonState()
+        createButton.setTitle("save".localized(), for: .normal)
         trackerNameTextField.delegate = self
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
@@ -47,16 +59,25 @@ final class NewUsualTrackerViewController: TrackerCreationViewController, UITabl
     }
     
     private func checkCreateButtonState() {
-            let isTrackerNameValid = trackerName != nil
-            let isCategorySelected = selectedCategory != nil
-            let isScheduleSelected = !selectedDaysString.isEmpty
-            
-            let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected && isScheduleSelected
-            
-            checkColorAndEmojiState()
-            
-            updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
-        }
+        let isTrackerNameValid = trackerName != nil
+        let isCategorySelected = selectedCategory != nil
+        let isScheduleSelected = !selectedDaysString.isEmpty
+        
+        let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected && isScheduleSelected
+        
+        checkColorAndEmojiState()
+        
+        updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
+    }
+    private func setupDaysLabel() {
+        contentView.addSubview(daysLabel)
+        
+        NSLayoutConstraint.activate([
+            daysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            daysLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+        ])
+    }
     
     // MARK: - UITableViewDataSource
     
@@ -237,65 +258,88 @@ final class NewUsualTrackerViewController: TrackerCreationViewController, UITabl
         }
     }
     
+    private func adjustConstraits() {
+
+        if let heightConstraint = contentView.constraints.first(where: { $0.firstAttribute == .height }) {
+            contentView.removeConstraint(heightConstraint)
+        }
+        
+        contentView.heightAnchor.constraint(equalToConstant: 952).isActive = true
+
+        if let topConstraint = contentView.constraints.first(where: {
+            $0.firstItem === trackerNameTextField && $0.firstAttribute == .top
+        }) {
+            contentView.removeConstraint(topConstraint)
+        }
+        
+        trackerNameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 102).isActive = true
+    }
+    
     // MARK: - Actions
     
     private func setupButtonActions() {
         cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+        createButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
     }
     
     @objc private func cancelButtonTapped(_ sender: UIButton) {
         trackerNameTextField.text = ""
         trackerName = nil
-        if let handler = closeNewTrackerVCHandler {
-            dismiss(animated: true, completion: nil)
-            handler()
+        dismiss(animated: true, completion: nil)
         }
-    }
     
-    @objc private func createButtonTapped() {
-        guard let trackerName = trackerName, !trackerName.isEmpty else {
+    @objc private func saveButtonTapped() {
+        guard let trackerName = trackerNameTextField.text, !trackerName.isEmpty else {
             print("Необходимо ввести название трекера")
             return
         }
-        
+
         guard let selectedColorName = colorVC.selectedColorName else {
             print("Не выбран цвет")
             return
         }
-        
+
         guard let selectedEmoji = emojiVC.selectedEmoji else {
             print("Не выбран эмодзи")
             return
         }
-        
+
         let scheduleArray: [String]
         if selectedDaysString == "everyDay".localized() || selectedDaysString.isEmpty {
             scheduleArray = WeekDay.allCases.map { $0.shortName }
         } else {
             scheduleArray = selectedDaysString.components(separatedBy: ", ")
         }
-        
+
         let scheduleSet: Set<WeekDay> = Set(scheduleArray.compactMap { WeekDay(shortName: $0.trimmingCharacters(in: .whitespaces)) })
+
+        guard let trackerId = trackerId else {
+            print("ID трекера не найден")
+            return
+        }
         
-        let newTracker = Tracker(
-            id: UUID(),
+        let editedTracker = Tracker(
+            id: trackerId,
             name: trackerName,
             color: selectedColorName,
             emoji: selectedEmoji,
             schedule: scheduleSet
         )
-        
         guard let categoryTitle = selectedCategory else {
             print("Категория не выбрана")
             return
         }
-        
-        completionHandler?(newTracker, categoryTitle)
-        print("Completion handler called with tracker: \(newTracker) and category: \(categoryTitle)")
-        
+
+        do {
+            try trackerStore.deleteTracker(withId: trackerId)
+            try trackerStore.addTracker(editedTracker, to: categoryTitle)
+        } catch {
+            print("Не удалось обработать трекер: \(error)")
+        }
+        completionHandler?(editedTracker, categoryTitle)
+
         dismiss(animated: true, completion: nil)
-        
-        closeNewTrackerVCHandler?()
     }
+
 }
+

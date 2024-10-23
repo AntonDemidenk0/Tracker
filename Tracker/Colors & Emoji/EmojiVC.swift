@@ -10,8 +10,7 @@ import UIKit
 
 final class EmojiViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
-    weak var newUsualVC: NewUsualTrackerViewController?
-    weak var newIrregularVC: NewIrregularTrackerViewController?
+    weak var trackerCreationVC: TrackerCreationViewController?
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -51,6 +50,25 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         ])
         collectionView.isScrollEnabled = false
     }
+    
+    func setSelectedEmoji(_ emoji: String?) {
+            guard let validEmoji = emoji, let index = emojis.firstIndex(of: validEmoji) else {
+                print("Ошибка: эмодзи равен nil или не найден в массиве")
+                return
+            }
+
+            let indexPath = IndexPath(item: index, section: 0)
+            selectedIndexPath = indexPath
+            selectedEmoji = validEmoji
+
+            collectionView.reloadData()
+            collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+
+            if let cell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
+                cell.isSelected = true
+                cell.updateAppearance(isSelected: true)
+            }
+        }
 
     // MARK: - UICollectionViewDataSource
     
@@ -64,6 +82,8 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         }
         let emoji = emojis[indexPath.item]
         cell.configure(with: emoji)
+        cell.isSelected = (indexPath == selectedIndexPath)
+        cell.updateAppearance(isSelected: cell.isSelected)
         return cell
     }
     
@@ -103,8 +123,8 @@ final class EmojiViewController: UIViewController, UICollectionViewDataSource, U
         selectedIndexPath = indexPath
         selectedEmoji = emojis[indexPath.item]
         print("Selected emoji: \(selectedEmoji ?? "")")
-        newUsualVC?.updateCreateButtonState()
-        newIrregularVC?.updateCreateButtonState()
+        trackerCreationVC?.selectedEmoji = selectedEmoji
+        trackerCreationVC?.checkColorAndEmojiState()
         
         if let newCell = collectionView.cellForItem(at: indexPath) as? EmojiCollectionViewCell {
             newCell.updateAppearance(isSelected: true)

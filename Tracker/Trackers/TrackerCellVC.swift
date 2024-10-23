@@ -63,7 +63,7 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
-    private lazy var daysLabel: UILabel = {
+    lazy var daysLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false

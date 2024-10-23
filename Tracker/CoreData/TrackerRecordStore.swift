@@ -50,6 +50,10 @@ final class TrackerRecordStore: NSObject {
         try deleteRecord(for: trackerId, on: date)
     }
     
+    func countDaysCompleted(for trackerId: UUID) -> Int {
+            return countRecords(for: trackerId)
+        }
+    
     // MARK: - Private Methods
     
     private func setupFetchedResultsController() {
@@ -134,7 +138,18 @@ final class TrackerRecordStore: NSObject {
         }
     }
 
-    
+    private func countRecords(for trackerId: UUID) -> Int {
+            let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "trackerId == %@", trackerId.uuidString)
+
+            do {
+                let count = try context.count(for: fetchRequest)
+                return count
+            } catch {
+                print("Ошибка при подсчете записей для trackerId: \(trackerId) - \(error)")
+                return 0
+            }
+        }
     
     private func decodeRecord(from recordCoreData: TrackerRecordCoreData) throws -> TrackerRecord {
         guard let trackerId = recordCoreData.trackerId else {

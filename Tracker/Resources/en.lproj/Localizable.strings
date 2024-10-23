@@ -40,6 +40,8 @@
 "edit" = "Edit";
 "schedule" = "Schedule";
 "everyDay" = "Every day";
+"editTracker.title" = "Edit tracker";
+"save" = "Save";
 
 "monday" = "Monday";
 "tuesday" = "Tuesday";

@@ -9,6 +9,13 @@ import Foundation
 import UIKit
 
 final class ColorCollectionViewCell: UICollectionViewCell {
+    
+    override var isSelected: Bool {
+            didSet {
+                updateAppearance()
+            }
+        }
+    
     private let colorView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +47,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     }
     func updateAppearance() {
         if isSelected {
-            
+        
             contentView.layer.borderWidth = 3
             
             if let backgroundColor = colorView.backgroundColor {

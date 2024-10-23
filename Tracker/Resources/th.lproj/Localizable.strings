@@ -40,6 +40,8 @@
 "edit" = "แก้ไข";
 "schedule" = "ตารางเวลา";
 "everyDay" = "ทุกวัน";
+"editTracker.title" = "การแก้ไขนิสัย";
+"save" = "บันทึก";
 
 "monday" = "วันจันทร์";
 "tuesday" = "วันอังคาร";

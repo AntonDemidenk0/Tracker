@@ -1,47 +1,61 @@
 //
-//  NewIrregularTrackerViewController.swift
+//  EditIrregularTracker.swift
 //  Tracker
 //
-//  Created by Anton Demidenko on 22.9.24..
+//  Created by Anton Demidenko on 19.10.24..
 //
 
-import Foundation
 import UIKit
 
-final class NewIrregularTrackerViewController: TrackerCreationViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate {
+final class EditIrregularTrackerViewController: TrackerCreationViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate {
     
     // MARK: - Properties
-    private var selectedCategory: String?
+    private let trackerStore = TrackerStore.shared
+    var selectedCategory: String?
+    var selectedDaysString: String = "" {
+        didSet {
+            tableView.reloadData()
+        }
+    }
     var trackersViewController: TrackersViewController?
-    private var trackerName: String?
-
-    private var completionHandler: ((Tracker, String) -> Void)?
-    private var closeNewTrackerVCHandler: (() -> Void)?
-
+    var trackerName: String?
+    var trackerId: UUID?
+    
+    lazy var daysLabel: UILabel = {
+        let label = UILabel()
+        label.text = "1"
+        label.textColor = UIColor(named: "YBlackColor") ?? .black
+        label.font = UIFont.boldSystemFont(ofSize: 32)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    var completionHandler: ((Tracker, String) -> Void)?
+    
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
 
-    func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
-        self.closeNewTrackerVCHandler = handler
-    }
-
     // MARK: - Lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "newIrregularTrackerNavItem.title".localized()
+        navigationItem.title = "editTracker.title".localized()
         tableView.dataSource = self
         tableView.delegate = self
+        setupButtonActions()
+        setupInitialSelection()
+        adjustConstraits()
+        setupDaysLabel()
+        checkCreateButtonState()
+        createButton.setTitle("save".localized(), for: .normal)
         trackerNameTextField.delegate = self
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        adjustConstraits()
-        setupButtonActions()
-
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapGesture)
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        view.addGestureRecognizer(tapGesture)
     }
     
     private func checkCreateButtonState() {
@@ -53,7 +67,16 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
             
             updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
         }
-
+    
+    private func setupDaysLabel() {
+        contentView.addSubview(daysLabel)
+        
+        NSLayoutConstraint.activate([
+            daysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            daysLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+        ])
+    }
     
     // MARK: - UITableViewDataSource
     
@@ -106,61 +129,12 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
         present(navVC, animated: true, completion: nil)
     }
     
-    // MARK: - CategorySelectionDelegate
-    
-    func didSelectCategory(_ category: String?) {
-        if let category = category {
-            self.selectedCategory = category
-        } else {
-            self.selectedCategory = nil
-        }
-        checkCreateButtonState()
-        tableView.reloadData()
+    @objc private func categoryListVC() {
+        let categoryListVC = CategoryListViewController()
+        categoryListVC.delegate = self
+        let navController = UINavigationController(rootViewController: categoryListVC)
+        present(navController, animated: true, completion: nil)
     }
-    
-    // MARK: - Actions
-    
-    private func setupButtonActions() {
-        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
-    }
-    
-    @objc private func cancelButtonTapped() {
-        dismiss(animated: true, completion: nil)
-    }
-    
-    @objc private func createButtonTapped() {
-        guard let trackerName = trackerName, !trackerName.isEmpty else {
-            print("Необходимо ввести название трекера")
-            return
-        }
-        
-        guard let selectedColorName = colorVC.selectedColorName else {
-            print("Не выбран цвет")
-            return
-        }
-        
-        guard let selectedEmoji = emojiVC.selectedEmoji else {
-            print("Не выбран эмодзи")
-            return
-        }
-        
-        let irregularTracker = Tracker(id: UUID(), name: trackerName, color: selectedColorName, emoji: selectedEmoji, schedule: nil)
-        
-        guard let categoryTitle = selectedCategory else {
-            print("Категория не выбрана")
-            return
-        }
-        
-        completionHandler?(irregularTracker, categoryTitle)
-        print("Completion handler called with tracker: \(irregularTracker) and category: \(categoryTitle)")
-        
-        dismiss(animated: true, completion: nil)
-        
-        closeNewTrackerVCHandler?()
-    }
-    
-    
     
     // MARK: - UITextFieldDelegate
     
@@ -208,6 +182,16 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
         }
     }
     
+    func didSelectCategory(_ category: String?) {
+        if let category = category {
+            self.selectedCategory = category
+        } else {
+            self.selectedCategory = nil
+        }
+        checkCreateButtonState()
+        tableView.reloadData()
+    }
+    
     private func updateContentViewHeight() {
         let newTopConstraintConstant: CGFloat = limitLabel.isHidden ? 24 : 62
         
@@ -228,11 +212,80 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
         if let heightConstraint = contentView.constraints.first(where: { $0.firstAttribute == .height }) {
             contentView.removeConstraint(heightConstraint)
         }
-        contentView.heightAnchor.constraint(equalToConstant: 775).isActive = true
+        
+        contentView.heightAnchor.constraint(equalToConstant: 853).isActive = true
+
+        if let topConstraint = contentView.constraints.first(where: {
+            $0.firstItem === trackerNameTextField && $0.firstAttribute == .top
+        }) {
+            contentView.removeConstraint(topConstraint)
+        }
+        
+        trackerNameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 102).isActive = true
         
         if let heightConstraint = tableView.constraints.first(where: { $0.firstAttribute == .height }) {
                 tableView.removeConstraint(heightConstraint)
             }
+        
             tableView.heightAnchor.constraint(equalToConstant: 75).isActive = true
     }
+    
+    // MARK: - Actions
+    
+    private func setupButtonActions() {
+        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        createButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc private func cancelButtonTapped(_ sender: UIButton) {
+        trackerNameTextField.text = ""
+        trackerName = nil
+        dismiss(animated: true, completion: nil)
+        }
+    
+    @objc private func saveButtonTapped() {
+        guard let trackerName = trackerNameTextField.text, !trackerName.isEmpty else {
+            print("Необходимо ввести название трекера")
+            return
+        }
+
+        guard let selectedColorName = colorVC.selectedColorName else {
+            print("Не выбран цвет")
+            return
+        }
+
+        guard let selectedEmoji = emojiVC.selectedEmoji else {
+            print("Не выбран эмодзи")
+            return
+        }
+
+        guard let trackerId = trackerId else {
+            print("ID трекера не найден")
+            return
+        }
+        
+        let editedTracker = Tracker(
+            id: trackerId,
+            name: trackerName,
+            color: selectedColorName,
+            emoji: selectedEmoji,
+            schedule: nil
+        )
+        guard let categoryTitle = selectedCategory else {
+            print("Категория не выбрана")
+            return
+        }
+
+        do {
+            try trackerStore.deleteTracker(withId: trackerId)
+            try trackerStore.addTracker(editedTracker, to: categoryTitle)
+        } catch {
+            print("Не удалось обработать трекер: \(error)")
+        }
+        completionHandler?(editedTracker, categoryTitle)
+
+        dismiss(animated: true, completion: nil)
+    }
+
 }
+
