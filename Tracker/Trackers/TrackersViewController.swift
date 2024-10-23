@@ -56,33 +56,25 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         return label
     }()
     
-    private lazy var searchTextField: UITextField = {
-        let textField = UITextField()
-        textField.font = UIFont.systemFont(ofSize: 17)
-        textField.placeholder = "search".localized()
-        textField.backgroundColor = UIColor(named: "SearchFieldColor") ?? .lightGray
-        textField.translatesAutoresizingMaskIntoConstraints = false
+    private lazy var searchTextField: UISearchTextField = {
+        let searchTextField = UISearchTextField()
+        searchTextField.font = UIFont.systemFont(ofSize: 17)
+        searchTextField.placeholder = "search".localized()
+        searchTextField.backgroundColor = UIColor(named: "SearchFieldColor") ?? .lightGray
+        searchTextField.translatesAutoresizingMaskIntoConstraints = false
+        searchTextField.layer.cornerRadius = 8
+        searchTextField.clipsToBounds = true
         
-        let iconContainerView = UIView(frame: CGRect(x: 0, y: 0, width: 32, height: 24))
-        let searchIcon = UIImageView(image: UIImage(named: "Mangnifyingglass"))
-        searchIcon.translatesAutoresizingMaskIntoConstraints = false
-        searchIcon.contentMode = .scaleAspectFit
-        iconContainerView.addSubview(searchIcon)
+        // Добавляем обработчик изменения текста
+        searchTextField.addTarget(self, action: #selector(searchTextFieldDidChange(_:)), for: .editingChanged)
         
-        NSLayoutConstraint.activate([
-            searchIcon.centerYAnchor.constraint(equalTo: iconContainerView.centerYAnchor),
-            searchIcon.leadingAnchor.constraint(equalTo: iconContainerView.leadingAnchor, constant: 8),
-            searchIcon.trailingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: -6.37),
-            searchIcon.widthAnchor.constraint(equalToConstant: 16),
-            searchIcon.heightAnchor.constraint(equalToConstant: 16)
-        ])
-        
-        textField.leftView = iconContainerView
-        textField.leftViewMode = .always
-        textField.layer.cornerRadius = 8
-        textField.clipsToBounds = true
-        return textField
+        return searchTextField
     }()
+
+    @objc private func searchTextFieldDidChange(_ textField: UISearchTextField) {
+        updateUIForTrackers()
+    }
+
     
     private lazy var stubImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MainScreenStub"))
@@ -397,11 +389,13 @@ extension TrackersViewController {
     }
     
     private func updateUIForTrackers() {
-        print("Updating UI for trackers. Current date: \(currentDate)")
+        let searchText = searchTextField.text?.lowercased() ?? ""
+        print("Updating UI for trackers. Current date: \(currentDate), search text: \(searchText)")
         
         let filteredCategories = categories.compactMap { category -> TrackerCategory? in
             let filteredTrackers = category.trackers.filter { tracker in
-                return shouldDisplayTracker(tracker, on: currentDate)
+                let matchesSearchText = searchText.isEmpty || tracker.name.lowercased().contains(searchText)
+                return matchesSearchText && shouldDisplayTracker(tracker, on: currentDate)
             }
             
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
@@ -416,13 +410,14 @@ extension TrackersViewController {
             stubImageView.isHidden = true
             stubLabel.isHidden = true
             collectionView.isHidden = false
-            filterButton.isHidden = false  
+            filterButton.isHidden = false
         }
         
         self.filteredCategories = filteredCategories
         sortCategories()
         collectionView.reloadData()
     }
+
     
     private func shouldDisplayTracker(_ tracker: Tracker, on date: Date) -> Bool {
         var calendar = Calendar(identifier: .gregorian)
