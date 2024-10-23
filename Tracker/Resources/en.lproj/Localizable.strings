@@ -47,6 +47,8 @@
 "trackers_today" = "Trackers for today";
 "completed" = "Completed";
 "not_completed" = "Not completed";
+"nothingFound" = "Nothing found";
+
 
 "monday" = "Monday";
 "tuesday" = "Tuesday";

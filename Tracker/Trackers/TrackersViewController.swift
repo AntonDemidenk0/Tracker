@@ -44,6 +44,8 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     private var completedTrackers: Set<TrackerRecord> = []
     private var pinnedTrackers: Set<Tracker> = []
+    private var noTrackersForSelectedDate = false
+    private var noTrackersAfterFilter = false
     
     // MARK: - UI Elements
     
@@ -70,11 +72,11 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         
         return searchTextField
     }()
-
+    
     @objc private func searchTextFieldDidChange(_ textField: UISearchTextField) {
         updateUIForTrackers()
     }
-
+    
     
     private lazy var stubImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MainScreenStub"))
@@ -114,7 +116,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var filterButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Фильтры", for: .normal)
+        button.setTitle("filters".localized(), for: .normal)
         button.backgroundColor = .systemBlue
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
@@ -401,36 +403,33 @@ extension TrackersViewController {
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
         }
         
-        if filteredCategories.isEmpty {
-            stubImageView.isHidden = false
-            stubLabel.isHidden = false
-            collectionView.isHidden = true
-            filterButton.isHidden = true
-        } else {
-            stubImageView.isHidden = true
-            stubLabel.isHidden = true
-            collectionView.isHidden = false
-            filterButton.isHidden = false
+        let noTrackersForSelectedDate = filteredCategories.isEmpty && searchText.isEmpty && currentFilter == nil
+        let noTrackersAfterFilter = filteredCategories.isEmpty && (currentFilter != nil || !searchText.isEmpty)
+        
+        if noTrackersForSelectedDate {
+            stubImageView.image = UIImage(named: "MainScreenStub")
+            stubLabel.text = "emptyState.title".localized()
+        } else if noTrackersAfterFilter {
+            stubImageView.image = UIImage(named: "StubImage")
+            stubLabel.text = "nothingFound".localized()
         }
+        
+        stubImageView.isHidden = false
+        stubLabel.isHidden = false
+        collectionView.isHidden = filteredCategories.isEmpty
+        filterButton.isHidden = filteredCategories.isEmpty && !searchText.isEmpty
         
         self.filteredCategories = filteredCategories
         sortCategories()
         collectionView.reloadData()
     }
-
+    
+    
     
     private func shouldDisplayTracker(_ tracker: Tracker, on date: Date) -> Bool {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
         var currentDate = date
-        
-        if currentFilter == "trackers_today".localized() {
-            let today = Date()
-            currentDate = today
-            if let datePicker = navigationItem.rightBarButtonItem?.customView as? UIDatePicker {
-                datePicker.setDate(today, animated: true)
-            }
-        }
         
         if let schedule = tracker.schedule {
             let currentWeekDay = calendar.component(.weekday, from: currentDate)
@@ -741,6 +740,13 @@ extension TrackersViewController: FilterSelectionDelegate {
     
     func didSelectFilter(_ filter: String?) {
         applyFilter(filter)
+        if filter == "trackers_today".localized() {
+            let today = Date()
+            currentDate = today
+            if let datePicker = navigationItem.rightBarButtonItem?.customView as? UIDatePicker {
+                datePicker.setDate(today, animated: true)
+            }
+        }
     }
     
     private func applyFilter(_ filter: String?) {

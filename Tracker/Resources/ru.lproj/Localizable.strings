@@ -47,7 +47,7 @@
 "trackers_today" = "Трекеры на сегодня";
 "completed" = "Завершенные";
 "not_completed" = "Не завершенные";
-
+"nothingFound" = "Ничего не найдено";
 
 
 "monday" = "Понедельник";

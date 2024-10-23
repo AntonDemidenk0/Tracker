@@ -47,6 +47,8 @@
 "trackers_today" = "ตัวติดตามสำหรับวันนี้";
 "completed" = "เสร็จสมบูรณ์";
 "not_completed" = "ยังไม่เสร็จสมบูรณ์";
+"nothingFound" = "ไม่พบอะไร";
+
 
 "monday" = "วันจันทร์";
 "tuesday" = "วันอังคาร";

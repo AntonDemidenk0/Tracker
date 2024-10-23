@@ -33,16 +33,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        UserDefaults.standard.removeObject(forKey: "selectedFilter")
+        return true
+    }
+    
     func applicationWillTerminate(_ application: UIApplication) {
         saveContext()
-        UserDefaults.standard.removeObject(forKey: "selectedFilter")
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         saveContext()
         UserDefaults.standard.removeObject(forKey: "selectedFilter")
     }
-    
     
     // MARK: UISceneSession Lifecycle
     

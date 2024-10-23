@@ -51,6 +51,7 @@ final class FiltersViewController: UIViewController, UITableViewDataSource, UITa
 
     private func loadSelectedFilter() {
         selectedFilter = UserDefaults.standard.string(forKey: "selectedFilter")
+        tableView.reloadData()
     }
 
     private func setupTableView() {
