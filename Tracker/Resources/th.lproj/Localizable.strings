@@ -42,6 +42,11 @@
 "everyDay" = "ทุกวัน";
 "editTracker.title" = "การแก้ไขนิสัย";
 "save" = "บันทึก";
+"filters" = "ฟิลเตอร์";
+"all_trackers" = "ทุกตัวติดตาม";
+"trackers_today" = "ตัวติดตามสำหรับวันนี้";
+"completed" = "เสร็จสมบูรณ์";
+"not_completed" = "ยังไม่เสร็จสมบูรณ์";
 
 "monday" = "วันจันทร์";
 "tuesday" = "วันอังคาร";

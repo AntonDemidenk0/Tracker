@@ -35,10 +35,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationWillTerminate(_ application: UIApplication) {
         saveContext()
+        UserDefaults.standard.removeObject(forKey: "selectedFilter")
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         saveContext()
+        UserDefaults.standard.removeObject(forKey: "selectedFilter")
     }
     
     

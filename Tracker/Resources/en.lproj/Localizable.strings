@@ -42,6 +42,11 @@
 "everyDay" = "Every day";
 "editTracker.title" = "Edit tracker";
 "save" = "Save";
+"filters" = "Filters";
+"all_trackers" = "All trackers";
+"trackers_today" = "Trackers for today";
+"completed" = "Completed";
+"not_completed" = "Not completed";
 
 "monday" = "Monday";
 "tuesday" = "Tuesday";

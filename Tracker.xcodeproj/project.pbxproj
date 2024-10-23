@@ -30,6 +30,7 @@
 		1FB3F40B2CC423E5001981AF /* EditIrregularTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB3F40A2CC423C7001981AF /* EditIrregularTracker.swift */; };
 		1FB3F40D2CC650CC001981AF /* TrackerCreationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB3F40C2CC650C2001981AF /* TrackerCreationVC.swift */; };
 		1FB3F40F2CC67CBF001981AF /* EditTrackerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB3F40E2CC67CAC001981AF /* EditTrackerVC.swift */; };
+		1FB3F4112CC8E81E001981AF /* FiltersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB3F4102CC8E816001981AF /* FiltersViewController.swift */; };
 		1FC47BB42C94300200DFABE4 /* CategoryListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB32C94300200DFABE4 /* CategoryListVC.swift */; };
 		1FC47BB62C943D0500DFABE4 /* NewCategoryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB52C943D0500DFABE4 /* NewCategoryVC.swift */; };
 		1FC47BB92C943DE200DFABE4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC47BB82C943DE200DFABE4 /* Extensions.swift */; };
@@ -85,6 +86,7 @@
 		1FB3F40A2CC423C7001981AF /* EditIrregularTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditIrregularTracker.swift; sourceTree = "<group>"; };
 		1FB3F40C2CC650C2001981AF /* TrackerCreationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCreationVC.swift; sourceTree = "<group>"; };
 		1FB3F40E2CC67CAC001981AF /* EditTrackerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTrackerVC.swift; sourceTree = "<group>"; };
+		1FB3F4102CC8E816001981AF /* FiltersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersViewController.swift; sourceTree = "<group>"; };
 		1FC47BB32C94300200DFABE4 /* CategoryListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryListVC.swift; sourceTree = "<group>"; };
 		1FC47BB52C943D0500DFABE4 /* NewCategoryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewCategoryVC.swift; sourceTree = "<group>"; };
 		1FC47BB82C943DE200DFABE4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 		1FC47BC22CA19FA300DFABE4 /* Trackers */ = {
 			isa = PBXGroup;
 			children = (
+				1FB3F4102CC8E816001981AF /* FiltersViewController.swift */,
 				1FE4A51A2C89B150005B7A7D /* TrackersViewController.swift */,
 				1FC63F292C8EFBCB00A15E07 /* TrackerModels.swift */,
 				1FC47BC82CA1A1D000DFABE4 /* TrackerHeaderVC.swift */,
@@ -426,6 +429,7 @@
 				1FC47BBB2C95A1A300DFABE4 /* ScheduleListVC.swift in Sources */,
 				1FC47BC12CA01E0000DFABE4 /* NewIrregularTrackerVC.swift in Sources */,
 				1F9FB3662CA5596F001ACF03 /* ScheduleTableViewCell.swift in Sources */,
+				1FB3F4112CC8E81E001981AF /* FiltersViewController.swift in Sources */,
 				1FE4A5172C89B150005B7A7D /* AppDelegate.swift in Sources */,
 				1FB3F40F2CC67CBF001981AF /* EditTrackerVC.swift in Sources */,
 				1FC47BCB2CA1A22400DFABE4 /* TrackerCellVC.swift in Sources */,

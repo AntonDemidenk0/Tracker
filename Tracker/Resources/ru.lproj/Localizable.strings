@@ -42,6 +42,13 @@
 "everyDay" = "Каждый день";
 "editTracker.title" = "Редактирование привычки";
 "save" = "Сохранить";
+"filters" = "Фильтры";
+"all_trackers" = "Все трекеры";
+"trackers_today" = "Трекеры на сегодня";
+"completed" = "Завершенные";
+"not_completed" = "Не завершенные";
+
+
 
 "monday" = "Понедельник";
 "tuesday" = "Вторник";

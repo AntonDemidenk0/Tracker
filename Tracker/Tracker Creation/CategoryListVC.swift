@@ -212,7 +212,6 @@ extension CategoryListViewController {
     }
 }
 
-// MARK: - Business Logic
 extension CategoryListViewController {
     
     @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
