@@ -48,7 +48,11 @@
 "completed" = "Completed";
 "not_completed" = "Not completed";
 "nothingFound" = "Nothing found";
-
+"nothing_to_analyze" = "Nothing to analyze";
+"bestPeriod" = "Best Period";
+"idealDays" = "Ideal Days";
+"trackersCompleted" = "Trackers Completed";
+"averageValue" = "Average Value";
 
 "monday" = "Monday";
 "tuesday" = "Tuesday";

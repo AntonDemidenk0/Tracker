@@ -48,7 +48,11 @@
 "completed" = "เสร็จสมบูรณ์";
 "not_completed" = "ยังไม่เสร็จสมบูรณ์";
 "nothingFound" = "ไม่พบอะไร";
-
+"nothing_to_analyze" = "ไม่มีอะไรให้วิเคราะห์";
+"bestPeriod" = "ช่วงเวลาที่ดีที่สุด";
+"idealDays" = "วันสมบูรณ์แบบ";
+"trackersCompleted" = "ติดตามเสร็จสิ้น";
+"averageValue" = "ค่าเฉลี่ย";
 
 "monday" = "วันจันทร์";
 "tuesday" = "วันอังคาร";

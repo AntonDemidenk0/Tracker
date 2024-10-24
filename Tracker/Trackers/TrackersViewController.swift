@@ -67,7 +67,6 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         searchTextField.layer.cornerRadius = 8
         searchTextField.clipsToBounds = true
         
-        // Добавляем обработчик изменения текста
         searchTextField.addTarget(self, action: #selector(searchTextFieldDidChange(_:)), for: .editingChanged)
         
         return searchTextField

@@ -48,7 +48,11 @@
 "completed" = "Завершенные";
 "not_completed" = "Не завершенные";
 "nothingFound" = "Ничего не найдено";
-
+"nothing_to_analyze" = "Анализировать пока нечего";
+"bestPeriod" = "Лучший период";
+"idealDays" = "Идеальные дни";
+"trackersCompleted" = "Трекеров завершено";
+"averageValue" = "Среднее значение";
 
 "monday" = "Понедельник";
 "tuesday" = "Вторник";
