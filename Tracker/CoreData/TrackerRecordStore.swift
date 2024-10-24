@@ -10,6 +10,7 @@ import CoreData
 import UIKit
 
 final class TrackerRecordStore: NSObject {
+    static let shared = TrackerRecordStore()
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData>?
     
@@ -35,6 +36,8 @@ final class TrackerRecordStore: NSObject {
         setupFetchedResultsController()
     }
     
+    var onRecordsUpdated: (() -> Void)?
+    
     // MARK: - Public Methods
     
     var trackerRecords: [TrackerRecord] {
@@ -51,8 +54,25 @@ final class TrackerRecordStore: NSObject {
     }
     
     func countDaysCompleted(for trackerId: UUID) -> Int {
-            return countRecords(for: trackerId)
-        }
+        return countRecords(for: trackerId)
+    }
+    
+    func calculateCompletedTrackers() -> Int {
+        let completedTrackers = fetchCompletedTrackerRecords()
+        return completedTrackers.count
+    }
+    
+    func calculateBestStreak() -> Int {
+        return calculateBestStreakInternal()
+    }
+    
+    func calculateIdealDays(for scheduledTrackers: [UUID]) -> Int {
+        return calculateIdealDaysInternal(for: scheduledTrackers)
+    }
+    
+    func calculateAverageCompletion() -> Int {
+        return calculateAverageCompletionInternal()
+    }
     
     // MARK: - Private Methods
     
@@ -74,7 +94,7 @@ final class TrackerRecordStore: NSObject {
             print("Ошибка при выполнении fetch: \(error)")
         }
     }
-
+    
     private func fetchTrackerRecords() -> [TrackerRecord] {
         guard let fetchedResultsController = fetchedResultsController,
               let objects = fetchedResultsController.fetchedObjects else {
@@ -137,19 +157,19 @@ final class TrackerRecordStore: NSObject {
             throw error
         }
     }
-
+    
     private func countRecords(for trackerId: UUID) -> Int {
-            let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "trackerId == %@", trackerId.uuidString)
-
-            do {
-                let count = try context.count(for: fetchRequest)
-                return count
-            } catch {
-                print("Ошибка при подсчете записей для trackerId: \(trackerId) - \(error)")
-                return 0
-            }
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "trackerId == %@", trackerId.uuidString)
+        
+        do {
+            let count = try context.count(for: fetchRequest)
+            return count
+        } catch {
+            print("Ошибка при подсчете записей для trackerId: \(trackerId) - \(error)")
+            return 0
         }
+    }
     
     private func decodeRecord(from recordCoreData: TrackerRecordCoreData) throws -> TrackerRecord {
         guard let trackerId = recordCoreData.trackerId else {
@@ -165,11 +185,86 @@ final class TrackerRecordStore: NSObject {
         do {
             try context.save()
             let objects = fetchedResultsController?.fetchedObjects
+            onRecordsUpdated?()
             print("Сохранение прошло успешно. Текущие объекты: \(String(describing: objects))")
         } catch {
             print("Ошибка при сохранении контекста: \(error)")
             throw error
         }
+    }
+    
+    private func fetchCompletedTrackerRecords() -> [TrackerRecord] {
+        let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        do {
+            let records = try context.fetch(fetchRequest)
+            return try records.map { try decodeRecord(from: $0) }
+        } catch {
+            print("Ошибка при получении завершенных записей: \(error)")
+            return []
+        }
+    }
+    
+    private func calculateBestStreakInternal() -> Int {
+        let records = fetchTrackerRecords()
+        
+        let groupedRecords = Dictionary(grouping: records) { (record) -> Date in
+            Calendar.current.startOfDay(for: record.date)
+        }
+        
+        let sortedDates = groupedRecords.keys.sorted()
+        
+        guard !sortedDates.isEmpty else {
+            return 0
+        }
+        
+        var bestStreak = 0
+        var currentStreak = 1
+        
+        for i in 1..<sortedDates.count {
+            if Calendar.current.isDate(sortedDates[i], inSameDayAs: sortedDates[i - 1].addingTimeInterval(86400)) {
+                currentStreak += 1
+            } else {
+                bestStreak = max(bestStreak, currentStreak)
+                currentStreak = 1
+            }
+        }
+        
+        bestStreak = max(bestStreak, currentStreak)
+        
+        return bestStreak
+    }
+    
+    private func calculateIdealDaysInternal(for scheduledTrackers: [UUID]) -> Int {
+        let records = fetchTrackerRecords()
+        
+        let groupedRecords = Dictionary(grouping: records) { (record) -> Date in
+            Calendar.current.startOfDay(for: record.date)
+        }
+        
+        let totalScheduled = scheduledTrackers.count
+        var idealDaysCount = 0
+        
+        for (date, recordsForDate) in groupedRecords {
+            let completedTrackers = Set(recordsForDate.map { $0.trackerId })
+            if completedTrackers.count == totalScheduled {
+                idealDaysCount += 1
+            }
+        }
+        
+        return idealDaysCount
+    }
+    
+    private func calculateAverageCompletionInternal() -> Int {
+        let records = fetchTrackerRecords()
+        
+        let groupedRecords = Dictionary(grouping: records) { (record) -> Date in
+            Calendar.current.startOfDay(for: record.date)
+        }
+        
+        let totalDays = groupedRecords.count
+        let totalCompletions = records.count
+        
+        return totalDays > 0 ? Int(totalCompletions) / Int(totalDays) : 0
     }
 }
 

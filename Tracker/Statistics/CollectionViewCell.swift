@@ -24,7 +24,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
     }()
     
     private let gradientLayer = CAGradientLayer()
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -36,7 +36,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupView() {
-
+        
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [
             UIColor(hex: "#007BFA")?.cgColor ?? UIColor.clear.cgColor,
@@ -57,7 +57,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
         shapeLayer.fillColor = UIColor.clear.cgColor
         shapeLayer.strokeColor = UIColor.black.cgColor
         gradientLayer.mask = shapeLayer
-
+        
         layer.addSublayer(gradientLayer)
         
         layer.cornerRadius = 16.0
@@ -67,7 +67,7 @@ final class CardCollectionViewCell: UICollectionViewCell {
         stackView.axis = .vertical
         stackView.spacing = 7
         stackView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         contentView.addSubview(stackView)
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
@@ -76,12 +76,12 @@ final class CardCollectionViewCell: UICollectionViewCell {
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         gradientLayer.frame = bounds
     }
-
+    
     
     func configure(title: String, content: String) {
         titleLabel.text = title

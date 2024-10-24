@@ -203,7 +203,7 @@ final class TrackerCell: UICollectionViewCell {
     
     @objc private func didTapButton(_ sender: UIButton) {
         guard let tracker = tracker, let currentDate = currentDate else { return }
-        
+        AnalyticsService().reportButtonClick(screen: "Main", item: "track")
         if Calendar.current.isDateInFuture(currentDate) {
             print("Нельзя отметить трекер для будущей даты")
             return
@@ -240,7 +240,6 @@ extension TrackerCell: UIContextMenuInteractionDelegate {
         guard let tracker = self.tracker else {
             return nil
         }
-        
         let isPinned = checkIfTrackerIsPinned(tracker)
         let pinActionTitle = isPinned ? "unpin".localized() : "pin".localized()
         

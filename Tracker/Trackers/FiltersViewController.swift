@@ -13,9 +13,9 @@ protocol FilterSelectionDelegate: AnyObject {
 }
 
 final class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
+    
     weak var delegate: FilterSelectionDelegate?
-
+    
     private let filters = [
         "all_trackers".localized(),
         "trackers_today".localized(),
@@ -27,7 +27,7 @@ final class FiltersViewController: UIViewController, UITableViewDataSource, UITa
             UserDefaults.standard.set(selectedFilter, forKey: "selectedFilter")
         }
     }
-
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ final class FiltersViewController: UIViewController, UITableViewDataSource, UITa
         tableView.separatorStyle = .none
         return tableView
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = NSLocalizedString("filters", comment: "Title for the filter button")
@@ -48,15 +48,15 @@ final class FiltersViewController: UIViewController, UITableViewDataSource, UITa
         setupTableView()
         loadSelectedFilter()
     }
-
+    
     private func loadSelectedFilter() {
         selectedFilter = UserDefaults.standard.string(forKey: "selectedFilter")
         tableView.reloadData()
     }
-
+    
     private func setupTableView() {
         view.addSubview(tableView)
-
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -68,15 +68,15 @@ final class FiltersViewController: UIViewController, UITableViewDataSource, UITa
 
 // MARK: - UITableViewDataSource
 extension FiltersViewController {
-
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
-
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filters.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath) as! CustomTableViewCell
         cell.textLabel?.text = filters[indexPath.row]
@@ -89,10 +89,10 @@ extension FiltersViewController {
             cell.accessoryType = .none
             cell.separatorTrailingConstraint?.constant = -16
         }
-
+        
         let isLastRow = indexPath.row == filters.count - 1
         cell.setSeparatorHidden(isLastRow)
-
+        
         if filters.count == 1 {
             cell.layer.cornerRadius = 16
             cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
@@ -105,13 +105,13 @@ extension FiltersViewController {
         } else {
             cell.layer.cornerRadius = 0
         }
-
+        
         return cell
     }
-
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selected = filters[indexPath.row]
-
+        
         if selectedFilter == selected {
             selectedFilter = nil
         } else {
