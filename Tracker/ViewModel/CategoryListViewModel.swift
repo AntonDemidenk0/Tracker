@@ -25,7 +25,7 @@ final class CategoryListViewModel {
         }
     
     func loadCategories() {
-        categories = trackerCategoryStore.fetchCategories()
+        categories = trackerCategoryStore.fetchCategories().filter { $0.title != trackerCategoryStore.pinnedCategory.title }
         selectedCategory = trackerCategoryStore.loadSelectedCategory()?.title
         onCategoriesUpdated?()
     }

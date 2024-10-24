@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Tracker: Codable {
+struct Tracker: Codable, Hashable {
     let id: UUID
     let name: String
     let color: String
@@ -15,11 +15,11 @@ struct Tracker: Codable {
     let schedule: Set<WeekDay>?
     
     var formattedSchedule: String {
-           if let schedule = schedule {
-               return schedule.map { $0.displayName }.joined(separator: ", ")
-           } else {
-               return "Нерегулярное событие"
-           }
+        if let schedule = schedule {
+            return schedule.map { $0.displayName }.joined(separator: ", ")
+        } else {
+            return "Нерегулярное событие"
+        }
     }
 }
 

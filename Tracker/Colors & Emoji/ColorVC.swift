@@ -9,9 +9,8 @@ import UIKit
 
 final class ColorViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    weak var newUsualVC: NewUsualTrackerViewController?
-    weak var newIrregularVC: NewIrregularTrackerViewController?
-    
+    weak var trackerCreationVC: TrackerCreationViewController?
+
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -24,7 +23,7 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.delegate = self
         collectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
-        collectionView.backgroundColor = .white
+        applyBackgroundColor()
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -35,11 +34,37 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     var selectedColor: UIColor?
     var selectedColorName: String?
     
-    private var selectedIndexPath: IndexPath?
-    
+    var selectedIndexPath: IndexPath?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCollectionView()
+    }
+    
+    func setSelectedColor(_ color: UIColor?) {
+        guard let validColor = color else {
+            print("Ошибка: цвет равен nil")
+            return
+        }
+        
+        selectedColor = validColor
+        if let index = colors.firstIndex(of: validColor) {
+            let indexPath = IndexPath(item: index, section: 0)
+            selectedIndexPath = indexPath
+            
+            collectionView.reloadData()
+            collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            
+            if let cell = collectionView.cellForItem(at: indexPath) as? ColorCollectionViewCell {
+                cell.isSelected = true
+                cell.updateAppearance()
+            }
+            
+            selectedColorName = colorNames[index]
+            print("Выбранный цвет: \(validColor), название: \(selectedColorName ?? "не задано")")
+        } else {
+            print("Цвет не найден в массиве colors: \(validColor)")
+        }
     }
     
     private func setupCollectionView() {
@@ -61,35 +86,30 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? ColorCollectionViewCell else {
-                return UICollectionViewCell()
-            }
-            
-            let color = colors[indexPath.item]
-            cell.configure(with: color)
-            
-            if indexPath == selectedIndexPath {
-                cell.layer.borderWidth = 2
-                cell.layer.borderColor = UIColor.black.cgColor
-            } else {
-                cell.layer.borderWidth = 0
-            }
-            
-            return cell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? ColorCollectionViewCell else {
+            return UICollectionViewCell()
         }
+        
+        let color = colors[indexPath.item]
+        cell.configure(with: color)
+        
+        cell.isSelected = (indexPath == selectedIndexPath)
+        
+        return cell
+    }
     
     // MARK: - SectionHeader
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-            if kind == UICollectionView.elementKindSectionHeader {
-                guard let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as? SectionHeaderView else {
-                    return UICollectionReusableView()
-                }
-                headerView.configure(with: "Цвет")
-                return headerView
+        if kind == UICollectionView.elementKindSectionHeader {
+            guard let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as? SectionHeaderView else {
+                return UICollectionReusableView()
             }
-            return UICollectionReusableView()
+            headerView.configure(with: "Цвет")
+            return headerView
         }
+        return UICollectionReusableView()
+    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 18)
@@ -104,7 +124,6 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
     // MARK: - UICollectionViewDelegate
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
         if let selectedIndexPath = selectedIndexPath {
             collectionView.deselectItem(at: selectedIndexPath, animated: false)
             if let oldCell = collectionView.cellForItem(at: selectedIndexPath) as? ColorCollectionViewCell {
@@ -120,14 +139,12 @@ final class ColorViewController: UIViewController, UICollectionViewDataSource, U
         if let selectedColor = selectedColor, let selectedColorName = selectedColorName {
             print("Selected color: \(selectedColor), name: \(selectedColorName)")
         }
-        
-        newUsualVC?.updateCreateButtonState()
-        newIrregularVC?.updateCreateButtonState()
-        
+        trackerCreationVC?.selectedColor = selectedColor
+        trackerCreationVC?.checkColorAndEmojiState()
+
         if let newCell = collectionView.cellForItem(at: indexPath) as? ColorCollectionViewCell {
             newCell.isSelected = true
             newCell.updateAppearance()
         }
     }
 }
-

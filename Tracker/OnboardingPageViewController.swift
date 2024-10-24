@@ -44,12 +44,13 @@ final class OnboardingPageViewController: UIViewController {
         textLabel.textAlignment = .center
         textLabel.numberOfLines = 2
         textLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        textLabel.textColor = UIColor(named: "AlwaysBlack")
         view.addSubview(textLabel)
         
         actionButton.setTitle(buttonTitle, for: .normal)
         actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         actionButton.layer.cornerRadius = 16
-        actionButton.backgroundColor = UIColor(named: "YBlackColor")
+        actionButton.backgroundColor = UIColor(named: "AlwaysBlack")
         actionButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         view.addSubview(actionButton)
     }
