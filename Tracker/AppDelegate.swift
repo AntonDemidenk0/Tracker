@@ -7,7 +7,6 @@
 
 import UIKit
 import CoreData
-import AppMetricaCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
