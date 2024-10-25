@@ -9,9 +9,8 @@ target 'Tracker' do
   
   pod 'AppMetricaAnalytics', '~> 5.8.1'
   
-  target 'TrackerTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-  
+end
+
+target 'TrackerTests' do
+  inherit! :search_paths
 end
