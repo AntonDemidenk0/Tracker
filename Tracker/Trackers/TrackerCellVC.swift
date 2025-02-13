@@ -12,6 +12,10 @@ import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
     func didToggleCompletion(for tracker: Tracker, on date: Date)
+    func didPinTracker(_ tracker: Tracker)
+    func didUnpinTracker(_ tracker: Tracker)
+    func didEditTracker(_ tracker: Tracker)
+    func didPushDelete(_ tracker: Tracker)
 }
 
 // MARK: - TrackerCell
@@ -36,8 +40,12 @@ final class TrackerCell: UICollectionViewCell {
     
     private lazy var emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 24)
+        label.font = UIFont.systemFont(ofSize: 14)
+        label.backgroundColor = .white.withAlphaComponent(0.3)
+        label.layer.cornerRadius = 12
+        label.layer.masksToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .center
         return label
     }()
     
@@ -49,12 +57,26 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
-    private lazy var daysLabel: UILabel = {
+    private lazy var footerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    lazy var daysLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "0 дней"
         return label
+    }()
+    
+    private lazy var pinImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "pin")
+        imageView.isHidden = true
+        return imageView
     }()
     
     private lazy var actionButton: UIButton = {
@@ -86,13 +108,24 @@ final class TrackerCell: UICollectionViewCell {
         contentView.addSubview(containerView)
         containerView.addSubview(nameLabel)
         containerView.addSubview(emojiLabel)
-        contentView.addSubview(daysLabel)
-        contentView.addSubview(actionButton)
+        containerView.addSubview(pinImageView)
+        
+        contentView.addSubview(footerView)
+        footerView.addSubview(daysLabel)
+        footerView.addSubview(actionButton)
+        
         setupLayout()
+        setupContextMenuInteraction()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupContextMenuInteraction()
+    }
+    
+    private func setupContextMenuInteraction() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        containerView.addInteraction(interaction)
     }
     
     // MARK: - Configure Cell
@@ -123,6 +156,9 @@ final class TrackerCell: UICollectionViewCell {
             actionButton.backgroundColor = containerView.backgroundColor
             actionButton.isSelected = false
         }
+        
+        let isPinned = checkIfTrackerIsPinned(tracker)
+        pinImageView.isHidden = !isPinned
     }
     
     // MARK: - Layout Setup
@@ -136,19 +172,30 @@ final class TrackerCell: UICollectionViewCell {
             
             emojiLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
             emojiLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
+            emojiLabel.heightAnchor.constraint(equalToConstant: 24),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 24),
             
             nameLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
             nameLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12),
             
-            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            daysLabel.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 16),
+            pinImageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -4),
+            pinImageView.centerYAnchor.constraint(equalTo: emojiLabel.centerYAnchor),
+            
+            footerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            footerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            footerView.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 8),
+            footerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            footerView.heightAnchor.constraint(equalToConstant: 34),
+            
+            daysLabel.leadingAnchor.constraint(equalTo: footerView.leadingAnchor, constant: 12),
+            daysLabel.centerYAnchor.constraint(equalTo: footerView.centerYAnchor),
             daysLabel.heightAnchor.constraint(equalToConstant: 20),
             
             actionButton.widthAnchor.constraint(equalToConstant: 34),
             actionButton.heightAnchor.constraint(equalToConstant: 34),
-            actionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            actionButton.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 8),
+            actionButton.trailingAnchor.constraint(equalTo: footerView.trailingAnchor, constant: -12),
+            actionButton.centerYAnchor.constraint(equalTo: footerView.centerYAnchor)
         ])
     }
     
@@ -156,7 +203,7 @@ final class TrackerCell: UICollectionViewCell {
     
     @objc private func didTapButton(_ sender: UIButton) {
         guard let tracker = tracker, let currentDate = currentDate else { return }
-        
+        AnalyticsService.reportButtonClick(screen: "Main", item: "track")
         if Calendar.current.isDateInFuture(currentDate) {
             print("Нельзя отметить трекер для будущей даты")
             return
@@ -184,5 +231,43 @@ final class TrackerCell: UICollectionViewCell {
     
     func updateDaysLabel(with count: Int) {
         daysLabel.text = count.formatDays()
+    }
+}
+
+extension TrackerCell: UIContextMenuInteractionDelegate {
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        guard let tracker = self.tracker else {
+            return nil
+        }
+        let isPinned = checkIfTrackerIsPinned(tracker)
+        let pinActionTitle = isPinned ? "unpin".localized() : "pin".localized()
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            
+            let pinAction = UIAction(title: pinActionTitle) { _ in
+                if isPinned {
+                    self.delegate?.didUnpinTracker(tracker)
+                } else {
+                    self.delegate?.didPinTracker(tracker)
+                }
+            }
+            
+            let editAction = UIAction(title: "edit".localized()) { _ in
+                self.delegate?.didEditTracker(tracker)
+            }
+            
+            let deleteAction = UIAction(title: "delete".localized(), attributes: .destructive) { _ in
+                self.delegate?.didPushDelete(tracker)
+            }
+            
+            return UIMenu(title: "", children: [pinAction, editAction, deleteAction])
+        }
+    }
+    
+    private func checkIfTrackerIsPinned(_ tracker: Tracker) -> Bool {
+        return TrackerCategoryStore.shared.categories.first { category in
+            category.title == "pinned".localized() && category.trackers.contains(where: { $0.id == tracker.id })
+        } != nil
     }
 }

@@ -16,9 +16,9 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var habitButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle("habitButton.title".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.systemBackground, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(newUsualTracker), for: .touchUpInside)
@@ -28,9 +28,9 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var irregularEventButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle("irregularEventButton.title".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YBlackColor")
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.systemBackground, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(newIrregularTracker), for: .touchUpInside)
@@ -42,9 +42,8 @@ final class NewTrackerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = .white
-        navigationItem.title = "Создание трекера"
+        applyBackgroundColor()
+        navigationItem.title = "newCategoryNavItem.title".localized()
         
         view.addSubview(habitButton)
         view.addSubview(irregularEventButton)

@@ -1,0 +1,71 @@
+/* 
+  Localizable.strings
+  Tracker
+
+  Created by Anton Demidenko on 14.10.24..
+  
+*/
+
+
+"onboardingLabelText1" = "Track only\nwhat you want";
+"onboardingLabelText2" = "Even if it's not\nliters of water and yoga";
+"onboardingButton.title" = "What a technology!";
+"trackers" = "Trackers";
+"statistics" = "Statistics";
+"search" = "Search";
+"emptyState.title" = "What will we track?";
+"newTrackerViewController.title" = "";
+"newTrackerNavItem.title" = "Create Tracker";
+"habitButton.title" = "Habit";
+"irregularEventButton.title" = "Irregular Event";
+"trackerNameTextFieldPlaceholder.title" = "Enter tracker name";
+"limitLabelText" = "Limit of 38 characters";
+"newRegularTrackerNavItem.title" = "New Habit";
+"newIrregularTrackerNavItem.title" = "New Irregular Event";
+"categoryListStubLabel.text" = "Habits and events can be\ncombined meaningfully";
+"addCategory" = "Add Category";
+"categoryDeleteAlert.title" = "Delete category?";
+"categoryDeleteAlert.text" = "Are you sure you want to delete the category '\(categoryToDelete.title)'?";
+"newCategoryTextFieldPlaceholder" = "Enter category name";
+"newCategoryNavItem.title" = "New Category";
+"ready" = "Ready";
+"cancel" = "Cancel";
+"create" = "Create";
+"delete" = "Delete";
+"delete.confirmation" = "Are you sure you want to delete the tracker?";
+"category" = "Category";
+"pinned" = "Pinned";
+"pin" = "Pin";
+"unpin" = "Unpin";
+"edit" = "Edit";
+"schedule" = "Schedule";
+"everyDay" = "Every day";
+"editTracker.title" = "Edit tracker";
+"save" = "Save";
+"filters" = "Filters";
+"all_trackers" = "All trackers";
+"trackers_today" = "Trackers for today";
+"completed" = "Completed";
+"not_completed" = "Not completed";
+"nothingFound" = "Nothing found";
+"nothing_to_analyze" = "Nothing to analyze";
+"bestPeriod" = "Best Period";
+"idealDays" = "Ideal Days";
+"trackersCompleted" = "Trackers Completed";
+"averageValue" = "Average Value";
+
+"monday" = "Monday";
+"tuesday" = "Tuesday";
+"wednesday" = "Wednesday";
+"thursday" = "Thursday";
+"friday" = "Friday";
+"saturday" = "Saturday";
+"sunday" = "Sunday";
+
+"monday.shortname" = "Mon";
+"tuesday.shortname" = "Tue";
+"wednesday.shortname" = "Wed";
+"thursday.shortname" = "Thu";
+"friday.shortname" = "Fri";
+"saturday.shortname" = "Sat";
+"sunday.shortname" = "Sun";

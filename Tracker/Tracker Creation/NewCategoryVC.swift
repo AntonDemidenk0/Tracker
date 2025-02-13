@@ -28,7 +28,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var categoryNameTextField: PaddedTextField = {
         let textField = PaddedTextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = "newCategoryTextFieldPlaceholder".localized()
         textField.layer.cornerRadius = 16
         textField.backgroundColor = UIColor(named: "TableViewColor")
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -38,7 +38,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var readyButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle("ready".localized(), for: .normal)
         button.backgroundColor = UIColor(named: "YGrayColor")
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
@@ -51,7 +51,7 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     private lazy var limitLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "limitLabelText".localized()
         label.textColor = UIColor(named: "CancelButtonColor")
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 17)
@@ -63,8 +63,8 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Новая категория"
-        view.backgroundColor = .white
+        navigationItem.title = "newCategoryNavItem.title".localized()
+        applyBackgroundColor()
         view.addSubview(categoryNameTextField)
         view.addSubview(readyButton)
         view.addSubview(limitLabel)
@@ -131,6 +131,9 @@ final class NewCategoryViewController: UIViewController, UITextFieldDelegate {
         
         if let text = textField.text, !text.isEmpty {
             readyButton.isEnabled = true
+            let isDarkMode = traitCollection.userInterfaceStyle == .dark
+            let textColor = isDarkMode ? UIColor(named: "TabBarBorderColor") : .white
+            readyButton.setTitleColor(textColor, for: .normal)
             readyButton.backgroundColor = UIColor(named: "YBlackColor")
             
             if text.count > 38 {

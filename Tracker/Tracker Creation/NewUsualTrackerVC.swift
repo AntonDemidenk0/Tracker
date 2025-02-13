@@ -7,10 +7,10 @@
 
 import UIKit
 
-final class NewUsualTrackerViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
+final class NewUsualTrackerViewController: TrackerCreationViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, CategorySelectionDelegate, ScheduleSelectionDelegate {
     
     // MARK: - Properties
-    private let trackerStore = TrackerStore()
+    private let trackerStore = TrackerStore.shared
     private var selectedCategory: String?
     private var selectedDaysString: String = "" {
         didSet {
@@ -18,87 +18,10 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         }
     }
     var trackersViewController: TrackersViewController?
-    var selectedColor: UIColor?
-    var selectedEmoji: String?
     private var trackerName: String?
-    private lazy var scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
-    }()
-    private lazy var contentView: UIView = {
-        let contentView = UIView()
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        return contentView
-    }()
-    private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.layer.cornerRadius = 16
-        tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
-        tableView.backgroundColor = UIColor.clear
-        tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: "categoryCell")
-        return tableView
-    }()
-    private lazy var colorVC: ColorViewController = {
-        let colorVC = ColorViewController()
-        colorVC.newUsualVC = self
-        return colorVC
-    }()
-    private lazy var emojiVC: EmojiViewController = {
-        let emojiVC = EmojiViewController()
-        emojiVC.newUsualVC = self
-        return emojiVC
-    }()
-    private lazy var trackerNameTextField: PaddedTextField = {
-        let textField = PaddedTextField()
-        textField.font = UIFont.systemFont(ofSize: 17)
-        textField.placeholder = "Введите название трекера"
-        textField.layer.cornerRadius = 16
-        textField.backgroundColor = UIColor(named: "TableViewColor")
-        textField.clearButtonMode = .whileEditing
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        return textField
-    }()
-    private lazy var limitLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Ограничение 38 символов"
-        label.textColor = UIColor(named: "CancelButtonColor")
-        label.textAlignment = .center
-        label.font = UIFont.systemFont(ofSize: 17)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.alpha = 0
-        label.isHidden = true
-        return label
-    }()
-    private lazy var cancelButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
-        button.setTitleColor(UIColor(named: "CancelButtonColor"), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.layer.borderColor = UIColor(named: "CancelButtonColor")?.cgColor
-        button.layer.borderWidth = 1
-        button.layer.cornerRadius = 16
-        button.backgroundColor = .clear
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        return button
-    }()
-    private lazy var createButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.backgroundColor = UIColor(named: "YGrayColor")
-        button.layer.cornerRadius = 16
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
-        return button
-    }()
     
     private var completionHandler: ((Tracker, String) -> Void)?
-
+    
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
@@ -107,137 +30,32 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         self.closeNewTrackerVCHandler = handler
     }
     // MARK: - Lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Новая привычка"
-        view.backgroundColor = .white
-        
-        setupScrollView()
-        setupTextField()
-        setupTableView()
-        setupChildViewControllers()
-        setupButtons()
-        setupLimitLabel()
+        navigationItem.title = "newRegularTrackerNavItem.title".localized()
+        tableView.dataSource = self
+        tableView.delegate = self
+        setupButtonActions()
+        trackerNameTextField.delegate = self
+        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         view.addGestureRecognizer(tapGesture)
     }
-
-    // MARK: - Setup UI
-
-    private func setupButtons() {
-        contentView.addSubview(cancelButton)
-        contentView.addSubview(createButton)
-        
-        NSLayoutConstraint.activate([
-            cancelButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            cancelButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
-            cancelButton.heightAnchor.constraint(equalToConstant: 60),
-            
-            createButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            createButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
-            createButton.heightAnchor.constraint(equalToConstant: 60),
-            
-            cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -8),
-            cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor)
-        ])
-        updateCreateButtonState()
-    }
-
-    private func setupTextField() {
-        trackerNameTextField.delegate = self
-        contentView.addSubview(trackerNameTextField)
-        
-        NSLayoutConstraint.activate([
-            trackerNameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            trackerNameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            trackerNameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            trackerNameTextField.heightAnchor.constraint(equalToConstant: 75),
-        ])
-        trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-    }
-
-    private func setupLimitLabel() {
-        contentView.addSubview(limitLabel)
-        
-        NSLayoutConstraint.activate([
-            limitLabel.topAnchor.constraint(equalTo: trackerNameTextField.bottomAnchor, constant: 8),
-            limitLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            limitLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-        ])
-    }
-
-    private func setupScrollView() {
-        view.addSubview(scrollView)
-        
-        scrollView.addSubview(contentView)
-        
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            
-            contentView.heightAnchor.constraint(equalToConstant: 850)
-        ])
-    }
-
-    private func setupTableView() {
-        tableView.dataSource = self
-        tableView.delegate = self
-        contentView.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: trackerNameTextField.bottomAnchor, constant: 24),
-            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            tableView.heightAnchor.constraint(equalToConstant: 150)
-        ])
-    }
-
-    private func setupChildViewControllers() {
-        addChild(colorVC)
-        contentView.addSubview(colorVC.view)
-        colorVC.didMove(toParent: self)
-        
-        addChild(emojiVC)
-        contentView.addSubview(emojiVC.view)
-        emojiVC.didMove(toParent: self)
-        
-        colorVC.view.translatesAutoresizingMaskIntoConstraints = false
-        emojiVC.view.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            emojiVC.view.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
-            emojiVC.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            emojiVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            emojiVC.view.heightAnchor.constraint(equalToConstant: 204),
-            
-            colorVC.view.topAnchor.constraint(equalTo: emojiVC.view.bottomAnchor, constant: 16),
-            colorVC.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            colorVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            colorVC.view.heightAnchor.constraint(equalToConstant: 204)
-        ])
-    }
     
-    func updateCreateButtonState() {
+    private func checkCreateButtonState() {
         let isTrackerNameValid = trackerName != nil
         let isCategorySelected = selectedCategory != nil
-        let isScheduleSelected = !(selectedDaysString.isEmpty)
-        let isColorSelected = colorVC.selectedColorName != nil
-        let isEmojiSelected = emojiVC.selectedEmoji != nil
+        let isScheduleSelected = !selectedDaysString.isEmpty
         
-        createButton.isEnabled = isTrackerNameValid && isCategorySelected && isScheduleSelected && isColorSelected && isEmojiSelected
-        createButton.backgroundColor = createButton.isEnabled ? UIColor(named: "YBlackColor") : UIColor(named: "YGrayColor")
+        let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected && isScheduleSelected
+        
+        checkColorAndEmojiState()
+        
+        updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
     }
     
     // MARK: - UITableViewDataSource
@@ -258,7 +76,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         cell.setAccessoryType(.disclosureIndicator)
         
         if indexPath.row == 0 {
-            let mainText = "Категория"
+            let mainText = "category".localized()
             
             if let selectedCategory = selectedCategory {
                 let combinedText = "\(mainText)\n\(selectedCategory)"
@@ -277,7 +95,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
             cell.setSeparatorHidden(false)
         } else if indexPath.row == 1 {
             
-            let mainText = "Расписание"
+            let mainText = "schedule".localized()
             if !selectedDaysString.isEmpty {
                 let combinedText = "\(mainText)\n\(selectedDaysString)"
                 let attributedText = NSMutableAttributedString(string: combinedText)
@@ -345,7 +163,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == trackerNameTextField {
             trackerName = textField.text
-            updateCreateButtonState()
+            checkCreateButtonState()
             print("Tracker name: \(trackerName ?? "")")
         }
     }
@@ -384,7 +202,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         } else {
             self.selectedCategory = nil
         }
-        updateCreateButtonState()
+        checkCreateButtonState()
         tableView.reloadData()
     }
     
@@ -399,7 +217,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         let sortedDaysString = sortedSelectedDays.count == WeekDay.allCases.count ? "Каждый день" : sortedSelectedDays.map { $0.shortName }.joined(separator: ", ")
         
         self.selectedDaysString = sortedDaysString
-        updateCreateButtonState()
+        checkCreateButtonState()
         tableView.reloadData()
     }
     
@@ -420,6 +238,11 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
     }
     
     // MARK: - Actions
+    
+    private func setupButtonActions() {
+        cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
+        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+    }
     
     @objc private func cancelButtonTapped(_ sender: UIButton) {
         trackerNameTextField.text = ""
@@ -447,7 +270,7 @@ final class NewUsualTrackerViewController: UIViewController, UITableViewDataSour
         }
         
         let scheduleArray: [String]
-        if selectedDaysString == "Каждый день" || selectedDaysString.isEmpty {
+        if selectedDaysString == "everyDay".localized() || selectedDaysString.isEmpty {
             scheduleArray = WeekDay.allCases.map { $0.shortName }
         } else {
             scheduleArray = selectedDaysString.components(separatedBy: ", ")

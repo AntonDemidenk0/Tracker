@@ -13,7 +13,7 @@ final class TrackerCategoryStore: NSObject {
     static let shared = TrackerCategoryStore()
     private let context: NSManagedObjectContext
     private var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData>?
-    private let trackerStore: TrackerStore
+    private var trackerStore = TrackerStore.shared
     
     var categories: [TrackerCategory] {
         return fetchCategoriesFromCoreData()
@@ -25,25 +25,30 @@ final class TrackerCategoryStore: NSObject {
         }
     }
     
+    let pinnedCategory: TrackerCategory = TrackerCategory(
+        title: "pinned".localized(),
+        trackers: []
+    )
+    
     var onCategoriesUpdated: (() -> Void)?
-
+    
     // MARK: - Initializers
     
     private override init() {
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-                fatalError("Не удалось привести delegate к AppDelegate")
-            }
-            self.context = appDelegate.persistentContainer.viewContext
-            
-            do {
-                self.trackerStore = try TrackerStore(context: context)
-            } catch {
-                fatalError("Не удалось инициализировать TrackerStore: \(error)")
-            }
-            
-            super.init()
-            setupFetchedResultsController()
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("Не удалось привести delegate к AppDelegate")
         }
+        self.context = appDelegate.persistentContainer.viewContext
+        
+        do {
+            self.trackerStore = try TrackerStore(context: context)
+        } catch {
+            assertionFailure("Не удалось инициализировать TrackerStore: \(error)")
+        }
+        
+        super.init()
+        setupFetchedResultsController()
+    }
     
     private func setupFetchedResultsController() {
         let fetchRequest = TrackerCategoryCoreData.fetchRequest()
@@ -73,11 +78,11 @@ final class TrackerCategoryStore: NSObject {
     }
     
     func addNewCategory(_ category: TrackerCategory) throws {
-            try addNewCategoryToCoreData(category)
+        try addNewCategoryToCoreData(category)
     }
     
     func deleteCategory(withTitle title: String) throws {
-            try deleteCategoryFromCoreData(withTitle: title)
+        try deleteCategoryFromCoreData(withTitle: title)
     }
     
     func saveCategories() {
@@ -245,9 +250,9 @@ extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-            notifyUpdates()
+        notifyUpdates()
     }
-
+    
     func controller(
         _ controller: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,
@@ -258,10 +263,10 @@ extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
         switch type {
         case .insert:
             guard let newIndexPath = newIndexPath else { return }
-                print("Inserted category at \(newIndexPath)")
+            print("Inserted category at \(newIndexPath)")
         case .delete:
             guard let indexPath = indexPath else { return }
-                print("Deleted category at \(indexPath)")
+            print("Deleted category at \(indexPath)")
         case .update:
             guard let indexPath = indexPath else { return }
             print("Updated category at \(indexPath)")
