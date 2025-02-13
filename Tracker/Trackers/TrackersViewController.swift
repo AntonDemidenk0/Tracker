@@ -72,11 +72,6 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         return searchTextField
     }()
     
-    @objc private func searchTextFieldDidChange(_ textField: UISearchTextField) {
-        updateUIForTrackers()
-    }
-    
-    
     private lazy var stubImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "MainScreenStub"))
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -127,7 +122,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     // MARK: - Life Cycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        AnalyticsService().reportScreenOpened(screen: "Main")
+        AnalyticsService.reportScreenOpened(screen: "Main")
     }
     
     override func viewDidLoad() {
@@ -141,11 +136,14 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         loadOriginalCategoriesFromUserDefaults()
         updateUIForTrackers()
         searchTextField.delegate = self
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        AnalyticsService().reportScreenClosed(screen: "Main")
+        AnalyticsService.reportScreenClosed(screen: "Main")
     }
     
     // MARK: - Setup Methods
@@ -231,7 +229,7 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
         } else {
             print("TrackersViewController не найден в навигационном стеке")
         }
-        AnalyticsService().reportButtonClick(screen: "Main", item: "add_track")
+        AnalyticsService.reportButtonClick(screen: "Main", item: "add_track")
         let navController = UINavigationController(rootViewController: newTrackerVC)
         self.present(navController, animated: true)
     }
@@ -243,11 +241,19 @@ final class TrackersViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc private func filtersVC(_ sender: UIButton) {
-        AnalyticsService().reportButtonClick(screen: "Main", item: "filter")
+        AnalyticsService.reportButtonClick(screen: "Main", item: "filter")
         let filtersVC = FiltersViewController()
         filtersVC.delegate = self
         let navController = UINavigationController(rootViewController: filtersVC)
         present(navController, animated: true, completion: nil)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    @objc private func searchTextFieldDidChange(_ textField: UISearchTextField) {
+        updateUIForTrackers()
     }
     
     func addTracker(_ tracker: Tracker, toCategoryTitle categoryTitle: String) {
@@ -581,7 +587,7 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     func didEditTracker(_ tracker: Tracker) {
-        AnalyticsService().reportButtonClick(screen: "Main", item: "edit")
+        AnalyticsService.reportButtonClick(screen: "Main", item: "edit")
         let categoryTitle = getCategory(for: tracker.id)
         
         if tracker.schedule != nil {
@@ -659,7 +665,7 @@ extension TrackersViewController: TrackerCellDelegate {
     }
     
     func didPushDelete(_ tracker: Tracker) {
-        AnalyticsService().reportButtonClick(screen: "Main", item: "delete")
+        AnalyticsService.reportButtonClick(screen: "Main", item: "delete")
         let alertController = UIAlertController(
             title: "Уверены что хотите удалить трекер?",
             message: nil,

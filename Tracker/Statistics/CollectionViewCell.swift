@@ -9,21 +9,41 @@ import UIKit
 
 final class CardCollectionViewCell: UICollectionViewCell {
     
-    private let titleLabel: UILabel = {
+    private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 34)
         label.textColor = UIColor(named: "YBlackColor") ?? .black
         return label
     }()
     
-    private let contentLabel: UILabel = {
+    private lazy var contentLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = UIColor(named: "YBlackColor") ?? .black
         return label
     }()
     
-    private let gradientLayer = CAGradientLayer()
+    private lazy var gradientLayer: CAGradientLayer = {
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            UIColor(hex: "#007BFA")?.cgColor ?? UIColor.clear.cgColor,
+            UIColor(hex: "#46E69D")?.cgColor ?? UIColor.clear.cgColor,
+            UIColor(hex: "#FD4C49")?.cgColor ?? UIColor.clear.cgColor
+        ]
+        gradient.locations = [0, 0.5, 1]
+        gradient.startPoint = CGPoint(x: 1, y: 0.5)
+        gradient.endPoint = CGPoint(x: 0, y: 0.5)
+        gradient.cornerRadius = 16.0
+        return gradient
+    }()
+    
+    private lazy var shapeLayer: CAShapeLayer = {
+        let shape = CAShapeLayer()
+        shape.lineWidth = 2
+        shape.fillColor = UIColor.clear.cgColor
+        shape.strokeColor = UIColor.black.cgColor
+        return shape
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -36,30 +56,11 @@ final class CardCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupView() {
-        
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [
-            UIColor(hex: "#007BFA")?.cgColor ?? UIColor.clear.cgColor,
-            UIColor(hex: "#46E69D")?.cgColor ?? UIColor.clear.cgColor,
-            UIColor(hex: "#FD4C49")?.cgColor ?? UIColor.clear.cgColor
-        ]
-        gradientLayer.locations = [0, 0.5, 1]
-        
-        gradientLayer.startPoint = CGPoint(x: 1, y: 0.5)
-        gradientLayer.endPoint = CGPoint(x: 0, y: 0.5)
-        
         gradientLayer.frame = bounds
-        gradientLayer.cornerRadius = 16.0
-        
-        let shapeLayer = CAShapeLayer()
-        shapeLayer.lineWidth = 2
         shapeLayer.path = UIBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), cornerRadius: 16.0).cgPath
-        shapeLayer.fillColor = UIColor.clear.cgColor
-        shapeLayer.strokeColor = UIColor.black.cgColor
         gradientLayer.mask = shapeLayer
         
         layer.addSublayer(gradientLayer)
-        
         layer.cornerRadius = 16.0
         layer.masksToBounds = true
         
@@ -81,7 +82,6 @@ final class CardCollectionViewCell: UICollectionViewCell {
         super.layoutSubviews()
         gradientLayer.frame = bounds
     }
-    
     
     func configure(title: String, content: String) {
         titleLabel.text = title

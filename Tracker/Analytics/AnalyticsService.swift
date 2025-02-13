@@ -13,17 +13,17 @@ struct AnalyticsService {
         AppMetrica.activate(with: configuration)
     }
     
-    func reportScreenOpened(screen: String) {
+    static func reportScreenOpened(screen: String) {
         let params: [AnyHashable: Any] = ["event": "open", "screen": screen]
         report(event: "Screen Event", params: params)
     }
     
-    func reportScreenClosed(screen: String) {
+    static func reportScreenClosed(screen: String) {
         let params: [AnyHashable: Any] = ["event": "close", "screen": screen]
         report(event: "Screen Event", params: params)
     }
 
-    func reportButtonClick(screen: String, item: String) {
+    static func reportButtonClick(screen: String, item: String) {
         let params: [AnyHashable: Any] = [
             "event": "click",
             "screen": screen,
@@ -32,7 +32,7 @@ struct AnalyticsService {
         report(event: "Button Click", params: params)
     }
     
-    private func report(event: String, params: [AnyHashable: Any]) {
+    static func report(event: String, params: [AnyHashable: Any]) {
         AppMetrica.reportEvent(name: event, parameters: params, onFailure: { error in
             print("REPORT ERROR: %@", error.localizedDescription)
         })

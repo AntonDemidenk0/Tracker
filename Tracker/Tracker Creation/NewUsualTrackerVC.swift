@@ -47,16 +47,16 @@ final class NewUsualTrackerViewController: TrackerCreationViewController, UITabl
     }
     
     private func checkCreateButtonState() {
-            let isTrackerNameValid = trackerName != nil
-            let isCategorySelected = selectedCategory != nil
-            let isScheduleSelected = !selectedDaysString.isEmpty
-            
-            let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected && isScheduleSelected
-            
-            checkColorAndEmojiState()
-            
-            updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
-        }
+        let isTrackerNameValid = trackerName != nil
+        let isCategorySelected = selectedCategory != nil
+        let isScheduleSelected = !selectedDaysString.isEmpty
+        
+        let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected && isScheduleSelected
+        
+        checkColorAndEmojiState()
+        
+        updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
+    }
     
     // MARK: - UITableViewDataSource
     

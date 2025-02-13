@@ -14,20 +14,20 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
     private var selectedCategory: String?
     var trackersViewController: TrackersViewController?
     private var trackerName: String?
-
+    
     private var completionHandler: ((Tracker, String) -> Void)?
     private var closeNewTrackerVCHandler: (() -> Void)?
-
+    
     func setCompletionHandler(_ handler: @escaping (Tracker, String) -> Void) {
         self.completionHandler = handler
     }
-
+    
     func setCloseNewTrackerVCHandler(_ handler: @escaping () -> Void) {
         self.closeNewTrackerVCHandler = handler
     }
-
+    
     // MARK: - Lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "newIrregularTrackerNavItem.title".localized()
@@ -37,7 +37,7 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
         trackerNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         adjustConstraits()
         setupButtonActions()
-
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
@@ -45,15 +45,15 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
     }
     
     private func checkCreateButtonState() {
-            let isTrackerNameValid = trackerName != nil
-            let isCategorySelected = selectedCategory != nil
-            
-            let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected
-            checkColorAndEmojiState()
-            
-            updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
-        }
-
+        let isTrackerNameValid = trackerName != nil
+        let isCategorySelected = selectedCategory != nil
+        
+        let isAdditionalValidationsPassed = isTrackerNameValid && isCategorySelected
+        checkColorAndEmojiState()
+        
+        updateCreateButtonState(isAdditionalValidationsPassed: isAdditionalValidationsPassed)
+    }
+    
     
     // MARK: - UITableViewDataSource
     
@@ -224,15 +224,15 @@ final class NewIrregularTrackerViewController: TrackerCreationViewController, UI
     }
     
     private func adjustConstraits() {
-
+        
         if let heightConstraint = contentView.constraints.first(where: { $0.firstAttribute == .height }) {
             contentView.removeConstraint(heightConstraint)
         }
         contentView.heightAnchor.constraint(equalToConstant: 775).isActive = true
         
         if let heightConstraint = tableView.constraints.first(where: { $0.firstAttribute == .height }) {
-                tableView.removeConstraint(heightConstraint)
-            }
-            tableView.heightAnchor.constraint(equalToConstant: 75).isActive = true
+            tableView.removeConstraint(heightConstraint)
+        }
+        tableView.heightAnchor.constraint(equalToConstant: 75).isActive = true
     }
 }
